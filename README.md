@@ -7,7 +7,7 @@ General-purpose programming language.
 Saurus is a dynamic, lightweight, general purpose programming language. The VM is written in portable C and can be easily embedded in another C or C++ program. The language is simple, powerful and dynamic in a fashion familiar to most programmers. Saurus is a dialect of Lisp, and shares with Lisp the code-as-data philosophy and a powerful macro system.
 
 ### Development
-Saurus is under heavy development and is not currently suitable for real-life software development. Many of the features of Saurus can be found in languages such as Clojure and Lua form which Saurus draws its inspiration.
+Saurus is under heavy development and is not currently suitable for real-life software development. Many of the features of Saurus can be found in languages such as Clojure, Scheme and Lua form which Saurus draws its inspiration.
 
 ### Download/Install
 Clone the project and run premake4 to generate a build script.
