@@ -150,8 +150,6 @@ static int set(su_state *s, int narg) {
 	return 1;
 }
 
-extern void libio(su_state *s);
-extern void libm(su_state *s);
 extern void libseq(su_state *s);
 
 void su_libinit(su_state *s) {
@@ -172,7 +170,5 @@ void su_libinit(su_state *s) {
 	su_pushfunction(s, &set);
 	su_setglobal(s, 1, "set");
 	
-	libio(s);
-	libm(s);
 	libseq(s);
 }

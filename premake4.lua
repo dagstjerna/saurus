@@ -9,8 +9,8 @@ solution "saurus"
    project "saurus"
       kind "ConsoleApp"
       language "C"
-      includedirs { "src/lua" }
-      files { "src/**.h", "src/**.c" }
+      includedirs { "lua" }
+      files { "src/**.h", "src/**.c", "lua/**.h", "lua/**.c" }
  
       if gcc then
          buildoptions { "-ansi", "-pedantic" }
