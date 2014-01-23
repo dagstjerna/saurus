@@ -29,7 +29,7 @@
 value_t ref_local(su_state *s, value_t *val) {
 	value_t v;
 	v.type = SU_LOCAL;
-	v.obj.loc = (local_t*)allocate(s, NULL, sizeof(local_t));
+	v.obj.loc = (local_t*)su_allocate(s, NULL, sizeof(local_t));
 	v.obj.loc->v = *val;
 	gc_insert_object(s, &v.obj.loc->gc, SU_LOCAL);
 	return v;

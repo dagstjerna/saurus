@@ -41,7 +41,7 @@ static value_t cell_rest(su_state *s, seq_t *q) {
 value_t cell_create_array(su_state *s, value_t *array, int num) {
 	int i;
 	value_t tmp;
-	cell_seq_t *cell = (cell_seq_t*)allocate(s, NULL, sizeof(cell_seq_t) * num);
+	cell_seq_t *cell = (cell_seq_t*)su_allocate(s, NULL, sizeof(cell_seq_t) * num);
 	tmp.type = SU_NIL;
 	
 	for (i = num - 1; i >= 0; i--) {
@@ -59,7 +59,7 @@ value_t cell_create_array(su_state *s, value_t *array, int num) {
 
 value_t cell_create(su_state *s, value_t *first, value_t *rest) {
 	value_t v;
-	cell_seq_t *cell = (cell_seq_t*)allocate(s, NULL, sizeof(cell_seq_t));
+	cell_seq_t *cell = (cell_seq_t*)su_allocate(s, NULL, sizeof(cell_seq_t));
 	cell->first = *first;
 	cell->rest = *rest;
 	cell->q.first = &cell_first;
@@ -72,7 +72,7 @@ value_t cell_create(su_state *s, value_t *first, value_t *rest) {
 
 static value_t it_next(su_state *s, it_seq_t *iq) {
 	value_t v;
-	it_seq_t *it = (it_seq_t*)allocate(s, NULL, sizeof(it_seq_t));
+	it_seq_t *it = (it_seq_t*)su_allocate(s, NULL, sizeof(it_seq_t));
 	it->idx = iq->idx + 1;
 	it->obj = iq->obj;
 	it->q.first = iq->q.first;
@@ -132,7 +132,7 @@ value_t it_create_vector(su_state *s, vector_t *vec) {
 		return v;
 	}
 	
-	it = (it_seq_t*)allocate(s, NULL, sizeof(it_seq_t));
+	it = (it_seq_t*)su_allocate(s, NULL, sizeof(it_seq_t));
 	it->idx = 0;
 	it->obj = (gc_t*)vec;
 	it->q.first = &it_vector_first;
@@ -152,7 +152,7 @@ value_t it_create_string(su_state *s, string_t *str) {
 		return v;
 	}
 	
-	it = (it_seq_t*)allocate(s, NULL, sizeof(it_seq_t));
+	it = (it_seq_t*)su_allocate(s, NULL, sizeof(it_seq_t));
 	it->idx = 0;
 	it->obj = (gc_t*)str;
 	it->q.first = &it_string_first;
@@ -180,7 +180,7 @@ static vector_node_t *insert(su_state *s, int level, vector_node_t *arr, int i, 
 static vector_node_t *pop_tail(su_state *s, int shift, vector_node_t *arr, vector_node_t **ptail);
 
 static vector_node_t *node_create_only(su_state *s, int len) {
-	vector_node_t *node = (vector_node_t*)allocate(s, NULL, (sizeof(vector_node_t) + sizeof(value_t) * len) - sizeof(value_t));
+	vector_node_t *node = (vector_node_t*)su_allocate(s, NULL, (sizeof(vector_node_t) + sizeof(value_t) * len) - sizeof(value_t));
 	node->len = (unsigned char)len;
 	gc_insert_object(s, (gc_t*)node, VECTOR_NODE);
 	return node;
@@ -228,7 +228,7 @@ value_t vector_create(su_state *s, unsigned cnt, int shift, vector_node_t *root,
 	vector_t *vec;
 	value_t v;
 	v.type = SU_VECTOR;
-	v.obj.gc_object = (gc_t*)allocate(s, NULL, sizeof(vector_t));
+	v.obj.gc_object = (gc_t*)su_allocate(s, NULL, sizeof(vector_t));
 	gc_insert_object(s, v.obj.gc_object, SU_VECTOR);
 	
 	assert(root);
@@ -485,7 +485,7 @@ static int full_node_get_hash(su_state *s, node_t *n) {
 
 static node_t *create_full_node(su_state *s, vector_node_t *nodes, int shift) {
 	node_t *tmp, *n;
-	node_full_t *fn = (node_full_t*)allocate(s, NULL, sizeof(node_full_t));
+	node_full_t *fn = (node_full_t*)su_allocate(s, NULL, sizeof(node_full_t));
 	fn->nodes = nodes;
 	fn->shift = shift;
 	tmp = nodes->data[0].obj.map_node;
@@ -590,7 +590,7 @@ static int idx_node_get_hash(su_state *s, node_t *n) {
 static node_t *create_idx_node(su_state *s, int bitmap, vector_node_t *nodes, int shift) {
 	node_t *n;
 	node_t *tmp;
-	node_idx_t *in = (node_idx_t*)allocate(s, NULL, sizeof(node_idx_t));
+	node_idx_t *in = (node_idx_t*)su_allocate(s, NULL, sizeof(node_idx_t));
 	in->bitmap = bitmap;
 	in->shift = shift;
 	in->nodes = nodes;
@@ -705,7 +705,7 @@ static int collision_node_get_hash(su_state *s, node_t *n) {
 
 static node_t *create_collision_node(su_state *s, int hash, vector_node_t *leaves) {
 	node_t *n;
-	node_collision_t *cn = (node_collision_t*)allocate(s, NULL, sizeof(node_collision_t));
+	node_collision_t *cn = (node_collision_t*)su_allocate(s, NULL, sizeof(node_collision_t));
 	cn->hash = hash;
 	cn->leaves = leaves;
 	
@@ -762,7 +762,7 @@ static int leaf_node_get_hash(su_state *s, node_t *n) {
 
 static node_t *create_leaf_node(su_state *s, int hash, value_t *key, value_t *val) {
 	node_t *n;
-	node_leaf_t *ln = (node_leaf_t*)allocate(s, NULL, sizeof(node_leaf_t));
+	node_leaf_t *ln = (node_leaf_t*)su_allocate(s, NULL, sizeof(node_leaf_t));
 	ln->hash = hash;
 	ln->key = *key;
 	ln->val = *val;
@@ -804,7 +804,7 @@ static int empty_node_get_hash(su_state *s, node_t *n) {
 }
 
 static node_t *create_empty_node(su_state *s) {
-	node_t *n = (node_t*)allocate(s, NULL, sizeof(node_t));
+	node_t *n = (node_t*)su_allocate(s, NULL, sizeof(node_t));
 	n->set = &empty_node_set;
 	n->without = &empty_node_without;
 	n->find = &empty_node_find;
@@ -816,7 +816,7 @@ static node_t *create_empty_node(su_state *s) {
 
 static value_t map_create(su_state *s, int cnt, node_t *root) {
 	value_t v;
-	map_t *m = (map_t*)allocate(s, NULL, sizeof(map_t));
+	map_t *m = (map_t*)su_allocate(s, NULL, sizeof(map_t));
 	m->root = root;
 	m->cnt = cnt;
 	v.type = SU_MAP;
@@ -907,7 +907,7 @@ static value_t it_seq_vector_rest(su_state *s, seq_t *q) {
 	
 static value_t it_seq_create_with_index(su_state *s, gc_t *obj, int idx) {
 	value_t v;
-	it_seq_t *q = (it_seq_t*)allocate(s, NULL, sizeof(it_seq_t));
+	it_seq_t *q = (it_seq_t*)su_allocate(s, NULL, sizeof(it_seq_t));
 	v.type = IT_SEQ;
 	q->obj = obj;
 	q->idx = idx;

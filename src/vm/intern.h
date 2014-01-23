@@ -205,7 +205,6 @@ struct state {
 	value_t stack[STACK_SIZE];
 };
 
-void *allocate(su_state *s, void *p, size_t n);
 unsigned hash_value(value_t *v);
 void push_value(su_state *s, value_t *v);
 int value_eq(value_t *a, value_t *b);

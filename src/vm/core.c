@@ -96,7 +96,7 @@ const char *su_version(int *major, int *minor, int *patch) {
 	return VERSION_STRING;
 }
 
-void *allocate(su_state *s, void *p, size_t n) {
+void *su_allocate(su_state *s, void *p, size_t n) {
 	void *np;
 	if (n) {
 		np = s->alloc(p, n);
@@ -135,7 +135,7 @@ void su_copy_range(su_state *s, int idx, int num) {
 }
 
 static reader_buffer_t *buffer_open(su_state *s, su_reader reader, void *data) {
-	reader_buffer_t *buffer = (reader_buffer_t*)allocate(s, NULL, sizeof(reader_buffer_t));
+	reader_buffer_t *buffer = (reader_buffer_t*)su_allocate(s, NULL, sizeof(reader_buffer_t));
 	buffer->reader = reader;
 	buffer->data = data;
 	buffer->offset = 0;
@@ -147,8 +147,8 @@ static reader_buffer_t *buffer_open(su_state *s, su_reader reader, void *data) {
 
 static void buffer_close(su_state *s, reader_buffer_t *buffer) {
 	buffer->reader(NULL, buffer->data);
-	allocate(s, buffer->buffer, 0);
-	allocate(s, buffer, 0);
+	su_allocate(s, buffer->buffer, 0);
+	su_allocate(s, buffer, 0);
 }
 
 static int buffer_read(su_state *s, reader_buffer_t *buffer, void *dest, size_t num_bytes) {
@@ -169,7 +169,7 @@ static int buffer_read(su_state *s, reader_buffer_t *buffer, void *dest, size_t 
 	
 		while (buffer->size < size) {
 			buffer->size = buffer->size * 2 + 1;
-			buffer->buffer = allocate(s, buffer->buffer, buffer->size);
+			buffer->buffer = su_allocate(s, buffer->buffer, buffer->size);
 		}
 		
 		buffer->offset = 0;
@@ -259,7 +259,7 @@ gc_t *string_from_db(su_state *s, unsigned hash, unsigned size, const char *str)
 		return v.obj.gc_object;
 	
 	v.type = SU_STRING;
-	v.obj.ptr = allocate(s, NULL, sizeof(string_t) + size);
+	v.obj.ptr = su_allocate(s, NULL, sizeof(string_t) + size);
 	v.obj.str->size = size;
 	memcpy(v.obj.str->str, str, size);
 	v.obj.str->str[size] = '\0';
@@ -473,16 +473,14 @@ void su_error(su_state *s, const char *fmt, ...) {
 }
 
 void su_assert(su_state *s, int cond, const char *fmt, ...) {
-	#ifndef NO_ERRORS
-		va_list args;
-		va_start(args, fmt);
-		if (!cond) error(s, fmt, args);
-		va_end(args);
-	#endif
+	va_list args;
+	va_start(args, fmt);
+	if (!cond) error(s, fmt, args);
+	va_end(args);
 }
 
 static const char *type_name(su_object_type_t type) {
-	switch (type) {
+	switch ((unsigned)type) {
 		case SU_NIL: return "nil";
 		case SU_BOOLEAN: return "boolean";
 		case SU_STRING: return "string";
@@ -493,8 +491,11 @@ static const char *type_name(su_object_type_t type) {
 		case SU_NATIVEDATA: return "native-data";
 		case SU_VECTOR: return "vector";
 		case SU_MAP: return "map";
-		case SU_SEQ: return "sequence";
 		case SU_LOCAL: return "reference";
+		case SU_SEQ:
+		case CELL_SEQ:
+		case IT_SEQ:
+			return "sequence";
 		default: assert(0);
 	}
 	return NULL;
@@ -731,7 +732,7 @@ static const_string_t *read_string(su_state *s, reader_buffer_t *buffer) {
 	if (buffer_read(s, buffer, &size, sizeof(unsigned)))
 		return NULL;
 	
-	str = allocate(s, NULL, sizeof(unsigned) + size);
+	str = su_allocate(s, NULL, sizeof(unsigned) + size);
 	if (buffer_read(s, buffer, str->str, size))
 		return NULL;
 	
@@ -747,12 +748,12 @@ int read_prototype(su_state *s, reader_buffer_t *buffer, prototype_t *prot) {
 	assert(sizeof(instruction_t) == 4);
 	
 	READ(&prot->num_inst, sizeof(unsigned));
-	prot->inst = allocate(s, NULL, sizeof(instruction_t) * prot->num_inst);
+	prot->inst = su_allocate(s, NULL, sizeof(instruction_t) * prot->num_inst);
 	for (i = 0; i < prot->num_inst; i++)
 		READ(&prot->inst[i], sizeof(instruction_t));
 	
 	READ(&prot->num_const, sizeof(unsigned));
-	prot->constants = allocate(s, NULL, sizeof(const_t) * prot->num_const);
+	prot->constants = su_allocate(s, NULL, sizeof(const_t) * prot->num_const);
 	for (i = 0; i < prot->num_const; i++) {
 		READ(&prot->constants[i].id, sizeof(char));
 		switch (prot->constants[i].id) {
@@ -774,12 +775,12 @@ int read_prototype(su_state *s, reader_buffer_t *buffer, prototype_t *prot) {
 	}
 	
 	READ(&prot->num_ups, sizeof(unsigned));
-	prot->upvalues = allocate(s, NULL, sizeof(upvalue_t) * prot->num_ups);
+	prot->upvalues = su_allocate(s, NULL, sizeof(upvalue_t) * prot->num_ups);
 	for (i = 0; i < prot->num_ups; i++)
 		READ(&prot->upvalues[i], sizeof(upvalue_t));
 	
 	READ(&prot->num_prot, sizeof(unsigned));
-	prot->prot = allocate(s, NULL, sizeof(prototype_t) * prot->num_prot);
+	prot->prot = su_allocate(s, NULL, sizeof(prototype_t) * prot->num_prot);
 	for (i = 0; i < prot->num_prot; i++) {
 		if (read_prototype(s, buffer, &prot->prot[i]))
 			goto error;
@@ -790,7 +791,7 @@ int read_prototype(su_state *s, reader_buffer_t *buffer, prototype_t *prot) {
 		goto error;
 	
 	READ(&prot->num_lineinf, sizeof(unsigned));
-	prot->lineinf = allocate(s, NULL, sizeof(int) * prot->num_lineinf);
+	prot->lineinf = su_allocate(s, NULL, sizeof(int) * prot->num_lineinf);
 	for (i = 0; i < prot->num_lineinf; i++)
 		READ(&prot->lineinf[i], sizeof(unsigned));
 	
@@ -806,14 +807,14 @@ error:
 void lambda(su_state *s, prototype_t *prot, int narg) {
 	unsigned i, tmp;
 	value_t v;
-	function_t *func = allocate(s, NULL, sizeof(function_t));
+	function_t *func = su_allocate(s, NULL, sizeof(function_t));
 	
 	func->narg = narg;
 	func->prot = prot;
 	func->num_const = prot->num_const;
 	func->num_ups = prot->num_ups;
-	func->constants = allocate(s, NULL, sizeof(value_t) * prot->num_const);
-	func->upvalues = allocate(s, NULL, sizeof(value_t) * prot->num_ups);
+	func->constants = su_allocate(s, NULL, sizeof(value_t) * prot->num_const);
+	func->upvalues = su_allocate(s, NULL, sizeof(value_t) * prot->num_ups);
 	
 	for (i = 0; i < func->num_const; i++)
 		func->constants[i] = create_value(s, &prot->constants[i]);
@@ -831,7 +832,7 @@ void lambda(su_state *s, prototype_t *prot, int narg) {
 }
 
 int su_load(su_state *s, su_reader reader, void *data) {
-	prototype_t *prot = allocate(s, NULL, sizeof(prototype_t));
+	prototype_t *prot = su_allocate(s, NULL, sizeof(prototype_t));
 	reader_buffer_t *buffer = buffer_open(s, reader, data);
 	
 	if (verify_header(s, buffer)) {
@@ -1147,6 +1148,18 @@ FILE *su_stderr(su_state *s) {
 	return s->stderr;
 }
 
+void su_set_stdout(su_state *s, FILE *fp) {
+	s->fstdout = fp;
+}
+
+void su_set_stdin(su_state *s, FILE *fp) {
+	s->fstdin = fp;
+}
+
+void su_set_stderr(su_state *s, FILE *fp) {
+	s->fstderr = fp;
+}
+
 static void *default_alloc(void *ptr, size_t size) {
 	if (size) return realloc(ptr, size);
 	free(ptr);
@@ -1188,5 +1201,10 @@ void su_close(su_state *s) {
 	s->globals.type = SU_NIL;
 	s->strings.type = SU_NIL;
 	su_gc(s);
+	
+	if (s->fstdin != stdin) fclose(s->fstdin);
+	if (s->fstdout != stdout) fclose(s->fstdout);
+	if (s->fstderr != stderr) fclose(s->fstderr);
+	
 	s->alloc(s, 0);
 }

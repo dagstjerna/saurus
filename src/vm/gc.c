@@ -90,31 +90,31 @@ static void gray_function(su_state *s, gc_t *obj) {
 
 static void free_prot(su_state *s, prototype_t *prot) {
 	int i;
-	allocate(s, prot->inst, 0);
-	allocate(s, prot->lineinf, 0);
-	allocate(s, prot->upvalues, 0);
+	su_allocate(s, prot->inst, 0);
+	su_allocate(s, prot->lineinf, 0);
+	su_allocate(s, prot->upvalues, 0);
 	
 	for (i = 0; i < prot->num_const; i++) {
 		if (prot->constants[i].id == CSTRING)
-			allocate(s, prot->constants[i].obj.str, 0);
+			su_allocate(s, prot->constants[i].obj.str, 0);
 	}
-	allocate(s, prot->constants, 0);
+	su_allocate(s, prot->constants, 0);
 	
 	for (i = 0; i < prot->num_prot; i++)
 		free_prot(s, &prot->prot[i]);
-	allocate(s, prot->prot, 0);
+	su_allocate(s, prot->prot, 0);
 }
 
 static void free_object(su_state *s, gc_t *obj) {
 	function_t *func;
 	if (obj->type == SU_FUNCTION) {
 		func = (function_t*)obj;
-		allocate(s, func->constants, 0);
-		allocate(s, func->upvalues, 0);
+		su_allocate(s, func->constants, 0);
+		su_allocate(s, func->upvalues, 0);
 	} else if (obj->type == PROTOTYPE) {
 		free_prot(s, (prototype_t*)obj);
 	}
-	allocate(s, obj, 0);
+	su_allocate(s, obj, 0);
 }
 
 static void begin(su_state *s) {

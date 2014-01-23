@@ -25,4 +25,6 @@
 #ifndef _OPTIONS_H_
 #define _OPTIONS_H_
 
+#define SU_OPT_DYNLIB
+
 #endif

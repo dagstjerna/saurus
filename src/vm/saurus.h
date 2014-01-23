@@ -52,6 +52,7 @@ su_state *su_init(su_alloc alloc);
 void su_close(su_state *s);
 void su_libinit(su_state *s);
 const char *su_version(int *major, int *minor, int *patch);
+void *su_allocate(su_state *s, void *p, size_t n);
 
 void su_seterror(su_state *s, jmp_buf jmp, int flag);
 void su_error(su_state *s, const char *fmt, ...);
@@ -117,5 +118,8 @@ void su_gc(su_state *s);
 FILE *su_stdout(su_state *s);
 FILE *su_stdin(su_state *s);
 FILE *su_stderr(su_state *s);
+void su_set_stdout(su_state *s, FILE *fp);
+void su_set_stdin(su_state *s, FILE *fp);
+void su_set_stderr(su_state *s, FILE *fp);
 
 #endif
