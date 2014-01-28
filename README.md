@@ -9,6 +9,9 @@ Saurus is under heavy development and is not currently suitable for real-life so
 ### Download/Install
 Clone the project and run premake4 to generate a build script.
 
+### Documentation
+For more information please visit our [wiki](https://github.com/andreas-t-jonsson/saurus/wiki/Reference-Manual).
+
 ### License
 ```
 Copyright (c) 2009-2014 Andreas T Jonsson <andreas@saurus.org>
