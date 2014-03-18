@@ -27,6 +27,18 @@
 
 #include "options.h"
 
+#ifndef false
+	#define false 0
+#endif
+
+#ifndef true
+	#define true 1
+#endif
+
+#ifndef bool
+	#define bool int
+#endif
+
 #if __STDC_VERSION__ >= 199901L
 	#define INLINE inline
 #else
@@ -43,7 +55,7 @@
 	static INLINE su_nativefunc lib_sym(void *lib, const char *sym) {
 		return NULL;
 	}
-#elif defined(_WIN32_)
+#elif defined(_WIN32)
 	#include <windows.h>
 
 	static INLINE void lib_unload(void *lib) {

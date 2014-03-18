@@ -30,7 +30,6 @@
 
 #include <stdio.h>
 #include <setjmp.h>
-#include <stdbool.h>
 
 #define MAX_THREADS 1024
 #define MAX_CALLS 128
@@ -174,7 +173,7 @@ struct function {
 struct state {
 	su_alloc alloc;
 	
-	FILE *stdin, *stdout, *stderr;
+	FILE *pstdin, *pstdout, *pstderr;
 	
 	gc_t *gc_root;
 	gc_t *gc_gray[GC_GRAY_SIZE];

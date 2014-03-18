@@ -642,7 +642,7 @@ static void push_varg(su_state *s, int num) {
 
 void su_check_type(su_state *s, int idx, su_object_type_t t) {
 	if (STK(idx)->type != t)
-		su_error(s, "Bad argument: Expected %s, but got %s.", type_name(t), type_name(STK(idx)->type));
+		su_error(s, "Bad argument: Expected %s, but got %s.", type_name(t), type_name((su_object_type_t)STK(idx)->type));
 }
 
 void su_seterror(su_state *s, jmp_buf jmp, int flag) {
@@ -1137,15 +1137,15 @@ void su_call(su_state *s, int narg, int nret) {
 }
 
 FILE *su_stdout(su_state *s) {
-	return s->fstdout;
+	return s->pstdout;
 }
 
 FILE *su_stdin(su_state *s) {
-	return s->fstdin;
+	return s->pstdin;
 }
 
 FILE *su_stderr(su_state *s) {
-	return s->stderr;
+	return s->pstderr;
 }
 
 void su_set_stdout(su_state *s, FILE *fp) {
