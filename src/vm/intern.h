@@ -92,10 +92,15 @@ enum {
 	CSTRING
 };
 
+enum {
+	IGC = 0x1
+};
+
 struct gc {
 	gc_t *next;
 	unsigned char type;
 	unsigned char flags;
+	unsigned char gen;
 };
 
 typedef struct {
@@ -176,9 +181,11 @@ struct state {
 	FILE *pstdin, *pstdout, *pstderr;
 	
 	gc_t *gc_root;
+	gc_t *gc_locals;
 	gc_t *gc_gray[GC_GRAY_SIZE];
 	unsigned gc_gray_size;
 	unsigned num_objects;
+	unsigned char gc_gen;
 
 	value_t globals;
 	value_t strings;
@@ -196,6 +203,7 @@ struct state {
 	frame_t *frame;
 	prototype_t *prot;
 	int pc, narg;
+	unsigned interupt;
 	
 	int frame_top;
 	frame_t frames[MAX_CALLS];

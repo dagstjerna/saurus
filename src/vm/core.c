@@ -99,6 +99,7 @@ const char *su_version(int *major, int *minor, int *patch) {
 void *su_allocate(su_state *s, void *p, size_t n) {
 	void *np;
 	if (n) {
+		s->interupt |= IGC;
 		np = s->alloc(p, n);
 		su_assert(s, np != NULL, "Out of memory!");
 		return np;
@@ -241,7 +242,8 @@ unsigned hash_value(value_t *v) {
 
 gc_t *gc_insert_object(su_state *s, gc_t *obj, su_object_type_t type) {
 	obj->type = type;
-	obj->flags = GC_FLAG_WHITE;
+	obj->flags = GC_FLAG_TRANS;
+	obj->gen = 0;
 	obj->next = s->gc_root;
 	s->gc_root = obj;
 	s->num_objects++;
@@ -905,7 +907,11 @@ static void vm_loop(su_state *s, function_t *func) {
 		break;
 	
 	for (s->pc = 0; s->pc < s->prot->num_inst; s->pc++) {
-		gc_trace(s);
+		if (s->interupt) {
+			if ((s->interupt & IGC) == IGC)
+				gc_trace(s);
+			s->interupt = 0x0;
+		}
 		inst = s->prot->inst[s->pc];
 		switch (inst.id) {
 			case OP_PUSH:
@@ -1171,6 +1177,7 @@ su_state *su_init(su_alloc alloc) {
 	su_state *s = (su_state*)mf(NULL, sizeof(su_state));
 	s->alloc = mf;
 
+	s->gc_gen = 0;
 	s->num_objects = 0;
 	s->gc_gray_size = 0;
 	s->gc_root = NULL;
@@ -1183,6 +1190,7 @@ su_state *su_init(su_alloc alloc) {
 	s->frame_top = 0;
 	s->narg = 0;
 	s->pc = 0xffff;
+	s->interupt = 0x0;
 	
 	s->reader_pad = NULL;
 	s->reader_pad_size = 0;

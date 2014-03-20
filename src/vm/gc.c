@@ -32,15 +32,11 @@
 static void free_prot(su_state *s, prototype_t *prot);
 
 static void add_to_gray(su_state *s, gc_t *obj) {
-	if (obj->flags != GC_FLAG_WHITE)
+	if (obj->flags != GC_FLAG_WHITE || obj->gen > s->gc_gen)
 		return;
 	assert(s->gc_gray_size <= GC_GRAY_SIZE);
 	obj->flags = GC_FLAG_GRAY;
 	s->gc_gray[s->gc_gray_size++] = obj;
-}
-
-static void add_to_black(gc_t *obj) {
-	obj->flags = GC_FLAG_BLACK;
 }
 
 static gc_t *get_gc_object(value_t *v) {
@@ -113,6 +109,8 @@ static void free_object(su_state *s, gc_t *obj) {
 		su_allocate(s, func->upvalues, 0);
 	} else if (obj->type == PROTOTYPE) {
 		free_prot(s, (prototype_t*)obj);
+	} else if (obj->type == SU_LOCAL) {
+		/* Remove from the local registry. */
 	}
 	su_allocate(s, obj, 0);
 }
@@ -129,17 +127,19 @@ static void begin(su_state *s) {
 		add_to_gray(s, s->globals.obj.gc_object);
 		add_to_gray(s, s->strings.obj.gc_object);
 	}
+	/* Add locals registry. */
 }
 
 static void scan(su_state *s) {
 	gc_t *obj;
 	gc_t *child;
+	
 	while (s->gc_gray_size) {
 		obj = s->gc_gray[--s->gc_gray_size];
-		if(obj->flags == GC_FLAG_BLACK)
+		if (obj->flags == GC_FLAG_BLACK)
 			continue;
-			
-		add_to_black(obj);
+		
+		obj->flags = GC_FLAG_BLACK;
 		switch (obj->type) {
 			case SU_LOCAL:
 				child = get_gc_object(&((local_t*)obj)->v);
@@ -191,7 +191,7 @@ static void end(su_state *s) {
 	gc_t *obj = s->gc_root;
 
 	while (obj) {
-		if (obj->flags == GC_FLAG_WHITE) {
+		if (obj->flags == GC_FLAG_WHITE && obj->gen <= s->gc_gen) {
 			if (prev)
 				prev->next = obj->next;
 			else
@@ -202,10 +202,14 @@ static void end(su_state *s) {
 			s->num_objects--;
 		} else {
 			obj->flags = GC_FLAG_WHITE;
+			if (obj->gen < GC_GENERATIONS)
+				obj->gen++;
 			prev = obj;
 			obj = obj->next;
 		}
 	}
+	
+	s->gc_gen = s->gc_gen == GC_GENERATIONS ? 0 : s->gc_gen + 1;
 }
 
 void gc_trace(su_state *s) {

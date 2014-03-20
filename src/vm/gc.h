@@ -29,8 +29,10 @@
 #include "intern.h"
 
 #define ALIVE_OBJECTS 100000
+#define GC_GENERATIONS 16
 
 enum {
+	GC_FLAG_TRANS,
 	GC_FLAG_WHITE,
 	GC_FLAG_GRAY,
 	GC_FLAG_BLACK
