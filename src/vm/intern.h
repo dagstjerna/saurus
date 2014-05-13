@@ -178,8 +178,6 @@ struct function {
 struct state {
 	su_alloc alloc;
 	
-	FILE *pstdin, *pstdout, *pstderr;
-	
 	gc_t *gc_root;
 	gc_t *gc_locals;
 	gc_t *gc_gray[GC_GRAY_SIZE];

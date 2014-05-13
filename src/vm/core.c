@@ -1143,15 +1143,15 @@ void su_call(su_state *s, int narg, int nret) {
 }
 
 FILE *su_stdout(su_state *s) {
-	return s->pstdout;
+	return s->fstdout;
 }
 
 FILE *su_stdin(su_state *s) {
-	return s->pstdin;
+	return s->fstdin;
 }
 
 FILE *su_stderr(su_state *s) {
-	return s->pstderr;
+	return s->fstderr;
 }
 
 void su_set_stdout(su_state *s, FILE *fp) {
