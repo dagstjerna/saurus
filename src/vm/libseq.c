@@ -71,7 +71,7 @@ static int vector_length(su_state *s, int narg) {
 static int vector_index(su_state *s, int narg) {
 	su_check_arguments(s, 2, SU_VECTOR, SU_NUMBER);
 	su_copy(s, -1);
-	su_vector_index(s, -2);
+	su_vector_index(s, -3);
 	return 1;
 }
 
@@ -79,7 +79,7 @@ static int vector_set(su_state *s, int narg) {
 	su_check_arguments(s, 3, SU_VECTOR, SU_NUMBER, SU_NIL);
 	su_copy(s, -2);
 	su_copy(s, -2);
-	su_vector_set(s, -3);
+	su_vector_set(s, -5);
 	return 1;
 }
 

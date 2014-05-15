@@ -627,8 +627,9 @@ void su_vector_push(su_state *s, int idx, int num) {
 
 void su_vector_pop(su_state *s, int idx, int num) {
 	int i;
+	int n = (int)STK(num)->obj.num;
 	value_t vec = *STK(idx);
-	for (i = 0; i < num; i++)
+	for (i = 0; i < n; i++)
 		vec = vector_pop(s, vec.obj.vec);
 	push_value(s, &vec);
 }
@@ -853,27 +854,34 @@ int su_load(su_state *s, su_reader reader, void *data) {
 	return 0;
 }
 
-void su_check_arguments(su_state *s, int num, ...) {
+static void check_args(su_state *s, va_list arg, int start, int num) {
 	int i;
 	su_object_type_t a, b;
-	va_list arg;
-	
-	if (s->narg != num) {
-		if (num >= 0) {
-			su_error(s, "Bad number of arguments to function. Expected %i but got %i.", num, s->narg);
-		} else if (num * -1 > s->narg) {
-			num *= -1;
-			su_error(s, "To few arguments passed to function. Expected %i but got %i.", num, s->narg);
-		}
-	}
-	
-	va_start(arg, num);
-	for (i = num; i; i--) {
+	for (i = start; i - num > 0; i--) {
 		a = su_type(s, -i);
 		b = va_arg(arg, su_object_type_t);
 		if (b != SU_NIL)
-			su_assert(s, a == b, "Expected argument %i to be of type '%s', but it is of type '%s'.", num - i, type_name(b), type_name(a));
+			su_assert(s, a == b, "Expected argument %i to be of type '%s', but it is of type '%s'.", start - i, type_name(b), type_name(a));
 	}
+}
+
+void su_check_arguments(su_state *s, int num, ...) {
+	va_list arg;
+	va_start(arg, num);
+	
+	if (s->narg != num) {
+		if (num < 0) {
+			num *= -1;
+			if (num > s->narg)
+				su_error(s, "To few arguments passed to function. Expected at least %i but got %i.", num, s->narg);
+			check_args(s, arg, s->narg, num);
+		} else {
+			su_error(s, "Bad number of arguments to function. Expected %i but got %i.", num, s->narg);
+		}
+	} else {
+		check_args(s, arg, num, num);
+	}
+	
 	va_end(arg);
 }
 
