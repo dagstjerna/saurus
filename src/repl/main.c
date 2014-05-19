@@ -58,11 +58,12 @@ int main(int argc, char *argv[]) {
 	char *tmp, *tmp2;
 	const char *input, *output;
 	int print_help = argc > 1 && strstr("-h -v --help --version", argv[1]) != NULL;
+	int pipe = argc > 1 && !strcmp("--", argv[1]);
 	
-	if (argc <= 1 || print_help) {
+	if (!pipe && (argc <= 1 || print_help)) {
 		printf("S A U R U S\nCopyright (c) 2009-2014 Andreas T Jonsson <andreas@saurus.org>\nVersion: %s\n\n", su_version(NULL, NULL, NULL));
 		if (print_help) {
-			puts("Usage: saurus <options> <input.su> <output.suc>\n\tOptions:\n\t\t'-c' Compile source file to binary file.");
+			puts("Usage: saurus <options> <input.su> <output.suc>\n\tOptions:\n\t\t'-c' Compile source file to binary file.\n\t\t'--' read from STDIN.");
 			return 0;
 		}
 	}
@@ -92,17 +93,20 @@ int main(int argc, char *argv[]) {
 	}
 	
 	ret = 0;
-	if (argc < 2) {
-		puts("Type '-h' for help or 'q to quit.\n");
+	if (argc < 2 || pipe) {
+		if (!pipe)
+			puts("Type '-h' for help or 'q to quit.\n");
 		su_pushstring(s, repl_help_text);
 		su_setglobal(s, 0, "-h");
 		
 		ret = setjmp(err);
-		su_seterror(s, err, ret);
-				
+		if (!pipe)
+			su_seterror(s, err, ret);
+		
 		jump: for (;;) {
-			printf("> ");
-			gets(buffer3);
+			if (!pipe)
+				printf("> ");
+			fgets(buffer3, BUFFER_SIZE, stdin);
 			tmp2 = tmpnam(buffer2);
 			
 			fp = fopen(tmp2, "w");
