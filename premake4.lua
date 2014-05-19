@@ -14,6 +14,7 @@ solution "saurus"
  
       if gcc then
          buildoptions { "-ansi", "-pedantic" }
+         links { "m" }
       end
 
       configuration "Debug"
