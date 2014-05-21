@@ -39,7 +39,7 @@ enum {
 	OP_PUSH,
 	OP_POP,
 	OP_COPY,
-	
+
 	OP_ADD,
 	OP_SUB,
 	OP_MUL,
@@ -47,23 +47,23 @@ enum {
 	OP_MOD,
 	OP_POW,
 	OP_UNM,
-	
+
 	OP_EQ,
 	OP_LESS,
 	OP_LEQUAL,
-	
+
 	OP_NOT,
 	OP_AND,
 	OP_OR,
-	
+
 	OP_TEST,
 	OP_JMP,
-	
+
 	OP_RETURN,
 	OP_CALL,
 	OP_TCALL,
 	OP_LAMBDA,
-	
+
 	OP_GETGLOBAL,
 	OP_SETGLOBAL,
 	OP_LOAD
@@ -159,20 +159,20 @@ static int buffer_read(su_state *s, reader_buffer_t *buffer, void *dest, size_t 
 		size_t size = buffer->len - buffer->offset;
 		size_t num = num_bytes < size ? num_bytes : size;
 		memcpy(((char*)dest) + dest_offset, &buffer->buffer[buffer->offset], num);
-		
+
 		buffer->offset += num;
 		dest_offset += num;
 		num_bytes -= num;
-	
+
 		if (num_bytes == 0) return 0;
 		res = buffer->reader(&size, buffer->data);
 		if (!res || size == 0) return -1;
-	
+
 		while (buffer->size < size) {
 			buffer->size = buffer->size * 2 + 1;
 			buffer->buffer = su_allocate(s, buffer->buffer, buffer->size);
 		}
-		
+
 		buffer->offset = 0;
 		buffer->len = size;
 		memcpy(buffer->buffer, res, size);
@@ -184,19 +184,19 @@ static int verify_header(su_state *s, reader_buffer_t *buffer) {
 	char sign[4];
 	unsigned char version[2];
 	unsigned short flags;
-	
+
 	buffer_read(s, buffer, sign, sizeof(sign));
 	if (memcmp(sign, "\x1bsuc", sizeof(sign)))
 		return -1;
-	
+
 	buffer_read(s, buffer, version, sizeof(version));
 	if (version[0] != VERSION_MAJOR && version[1] != VERSION_MINOR)
 		return -1;
-	
+
 	buffer_read(s, buffer, &flags, sizeof(flags));
 	if (flags != 0)
 		return -1;
-	
+
 	return 0;
 }
 
@@ -255,11 +255,11 @@ gc_t *string_from_db(su_state *s, unsigned hash, unsigned size, const char *str)
 	key.type = SU_NATIVEPTR;
 	key.obj.ptr = 0;
 	memcpy(&key.obj.ptr, &hash, sizeof(unsigned));
-	
+
 	v = map_get(s, s->strings.obj.m, &key, hash);
 	if (v.type != SU_INV)
 		return v.obj.gc_object;
-	
+
 	v.type = SU_STRING;
 	v.obj.ptr = su_allocate(s, NULL, sizeof(string_t) + size);
 	v.obj.str->size = size;
@@ -268,7 +268,7 @@ gc_t *string_from_db(su_state *s, unsigned hash, unsigned size, const char *str)
 	v.obj.str->hash = hash;
 	gc_insert_object(s, v.obj.gc_object, SU_STRING);
 	s->strings = map_insert(s, s->strings.obj.m, &key, hash, &v);
-	
+
 	return v.obj.gc_object;
 }
 
@@ -291,10 +291,10 @@ const char *su_stringify(su_state *s, int idx) {
 			sprintf(s->scratch_pad, "%s", ((string_t*)v->obj.gc_object)->str);
 			break;
 		case SU_FUNCTION:
-			sprintf(s->scratch_pad, "<function %p>", v->obj.func);
+			sprintf(s->scratch_pad, "<function %p>", (void*)v->obj.func);
 			break;
 		case SU_NATIVEFUNC:
-			sprintf(s->scratch_pad, "<native-function %p>", v->obj.nfunc);
+			sprintf(s->scratch_pad, "<native-function %p>", (void*)v->obj.nfunc);
 			break;
 		case SU_NATIVEPTR:
 			sprintf(s->scratch_pad, "<native-pointer %p>", v->obj.ptr);
@@ -330,7 +330,7 @@ static void update_global_ref(su_state *s) {
 	key.type = SU_STRING;
 	key.obj.gc_object = string_from_db(s, hash, 3, "_G");
 	val = ref_local(s, &s->globals);
-	
+
 	hash = hash_value(&key);
 	s->globals = map_insert(s, s->globals.obj.m, &key, hash, &val);
 }
@@ -436,13 +436,13 @@ void error(su_state *s, const char *fmt, va_list args) {
 	int i;
 	const_string_t *str;
 	char *filename = "?";
-	
+
 	if (fmt) {
 		fputs("\n", s->fstderr);
 		vfprintf(s->fstderr, fmt, args);
 		fputs("\n", s->fstderr);
 	}
-		
+
 	for (i = s->frame_top - 1; i >= 0; i--) {
 		str = s->frames[i].func->prot->name;
 		if (str->size) {
@@ -450,12 +450,12 @@ void error(su_state *s, const char *fmt, va_list args) {
 			break;
 		}
 	}
-	
+
 	if (s->prot && s->pc < s->prot->num_lineinf)
 		fprintf(s->fstderr, "%s : %i>\n\n", filename, s->prot->lineinf[s->pc]);
 	else
 		fprintf(s->fstderr, "%s : -1>\n\n", filename);
-		
+
 	fflush(s->fstderr);
 	if (s->errtop >= 0)
 		longjmp(s->err, 1);
@@ -666,15 +666,15 @@ int su_getglobal(su_state *s, const char *name) {
 	value_t v;
 	unsigned size = strlen(name) + 1;
 	unsigned hash = murmur(name, size, 0);
-	
+
 	v.type = SU_STRING;
 	v.obj.gc_object = string_from_db(s, hash, size, name);
 	hash = hash_value(&v);
-	
+
 	v = map_get(s, s->globals.obj.m, &v, hash);
 	if (v.type == SU_INV)
 		return 0;
-	
+
 	push_value(s, &v);
 	return 1;
 }
@@ -683,14 +683,14 @@ void su_setglobal(su_state *s, int replace, const char *name) {
 	value_t v;
 	unsigned size = strlen(name) + 1;
 	unsigned hash = murmur(name, size, 0);
-	
+
 	v.type = SU_STRING;
 	v.obj.gc_object = string_from_db(s, hash, size, name);
 	hash = hash_value(&v);
-	
+
 	if (!replace)
 		su_assert(s, map_get(s, s->globals.obj.m, &v, hash).type == SU_INV, "Duplicated global!");
-	
+
 	s->globals = map_insert(s, s->globals.obj.m, &v, hash, STK(-1));
 	update_global_ref(s);
 	su_pop(s, 1);
@@ -731,14 +731,14 @@ value_t create_value(su_state *s, const_t *constant) {
 static const_string_t *read_string(su_state *s, reader_buffer_t *buffer) {
 	const_string_t *str;
 	unsigned size;
-	
+
 	if (buffer_read(s, buffer, &size, sizeof(unsigned)))
 		return NULL;
-	
+
 	str = su_allocate(s, NULL, sizeof(unsigned) + size);
 	if (buffer_read(s, buffer, str->str, size))
 		return NULL;
-	
+
 	str->size = size;
 	return str;
 }
@@ -746,15 +746,15 @@ static const_string_t *read_string(su_state *s, reader_buffer_t *buffer) {
 int read_prototype(su_state *s, reader_buffer_t *buffer, prototype_t *prot) {
 	unsigned i;
 	memset(prot, 0, sizeof(prototype_t));
-	
+
 	assert(sizeof(unsigned) == 4);
 	assert(sizeof(instruction_t) == 4);
-	
+
 	READ(&prot->num_inst, sizeof(unsigned));
 	prot->inst = su_allocate(s, NULL, sizeof(instruction_t) * prot->num_inst);
 	for (i = 0; i < prot->num_inst; i++)
 		READ(&prot->inst[i], sizeof(instruction_t));
-	
+
 	READ(&prot->num_const, sizeof(unsigned));
 	prot->constants = su_allocate(s, NULL, sizeof(const_t) * prot->num_const);
 	for (i = 0; i < prot->num_const; i++) {
@@ -776,30 +776,30 @@ int read_prototype(su_state *s, reader_buffer_t *buffer, prototype_t *prot) {
 				assert(0);
 		}
 	}
-	
+
 	READ(&prot->num_ups, sizeof(unsigned));
 	prot->upvalues = su_allocate(s, NULL, sizeof(upvalue_t) * prot->num_ups);
 	for (i = 0; i < prot->num_ups; i++)
 		READ(&prot->upvalues[i], sizeof(upvalue_t));
-	
+
 	READ(&prot->num_prot, sizeof(unsigned));
 	prot->prot = su_allocate(s, NULL, sizeof(prototype_t) * prot->num_prot);
 	for (i = 0; i < prot->num_prot; i++) {
 		if (read_prototype(s, buffer, &prot->prot[i]))
 			goto error;
 	}
-	
+
 	prot->name = read_string(s, buffer);
 	if (!prot->name)
 		goto error;
-	
+
 	READ(&prot->num_lineinf, sizeof(unsigned));
 	prot->lineinf = su_allocate(s, NULL, sizeof(int) * prot->num_lineinf);
 	for (i = 0; i < prot->num_lineinf; i++)
 		READ(&prot->lineinf[i], sizeof(unsigned));
-	
+
 	return 0;
-	
+
 error:
 	/* TODO: Deleate the rest of the objects. */
 	return -1;
@@ -811,23 +811,23 @@ void lambda(su_state *s, prototype_t *prot, int narg) {
 	unsigned i, tmp;
 	value_t v;
 	function_t *func = su_allocate(s, NULL, sizeof(function_t));
-	
+
 	func->narg = narg;
 	func->prot = prot;
 	func->num_const = prot->num_const;
 	func->num_ups = prot->num_ups;
 	func->constants = su_allocate(s, NULL, sizeof(value_t) * prot->num_const);
 	func->upvalues = su_allocate(s, NULL, sizeof(value_t) * prot->num_ups);
-	
+
 	for (i = 0; i < func->num_const; i++)
 		func->constants[i] = create_value(s, &prot->constants[i]);
-	
+
 	for (i = 0; i < func->num_ups; i++) {
 		tmp = s->frame_top - prot->upvalues[i].lv;
 		tmp = s->frames[tmp].stack_top + prot->upvalues[i].idx + 1;
 		func->upvalues[i] = s->stack[tmp];
 	}
-	
+
 	gc_insert_object(s, (gc_t*)func, SU_FUNCTION);
 	v.type = SU_FUNCTION;
 	v.obj.func = func;
@@ -837,17 +837,17 @@ void lambda(su_state *s, prototype_t *prot, int narg) {
 int su_load(su_state *s, su_reader reader, void *data) {
 	prototype_t *prot = su_allocate(s, NULL, sizeof(prototype_t));
 	reader_buffer_t *buffer = buffer_open(s, reader, data);
-	
+
 	if (verify_header(s, buffer)) {
 		buffer_close(s, buffer);
 		return -1;
 	}
-	
+
 	if (read_prototype(s, buffer, prot)) {
 		buffer_close(s, buffer);
 		return -1;
 	}
-	
+
 	buffer_close(s, buffer);
 	gc_insert_object(s, &prot->gc, PROTOTYPE);
 	lambda(s, prot, -1);
@@ -868,7 +868,7 @@ static void check_args(su_state *s, va_list arg, int start, int num) {
 void su_check_arguments(su_state *s, int num, ...) {
 	va_list arg;
 	va_start(arg, num);
-	
+
 	if (s->narg != num) {
 		if (num < 0) {
 			num *= -1;
@@ -881,7 +881,7 @@ void su_check_arguments(su_state *s, int num, ...) {
 	} else {
 		check_args(s, arg, num, num);
 	}
-	
+
 	va_end(arg);
 }
 
@@ -895,17 +895,17 @@ static void vm_loop(su_state *s, function_t *func) {
 	value_t tmpv;
 	instruction_t inst;
 	int tmp, narg, i;
-	
+
 	s->frame = FRAME();
 	s->prot = func->prot;
-	
+
 	#define ARITH_OP(op) \
 		su_check_type(s, -2, SU_NUMBER); \
 		su_check_type(s, -1, SU_NUMBER); \
 		STK(-2)->obj.num = STK(-2)->obj.num op STK(-1)->obj.num; \
 		su_pop(s, 1); \
 		break;
-	
+
 	#define LOG_OP(op) \
 		su_check_type(s, -2, SU_NUMBER); \
 		su_check_type(s, -1, SU_NUMBER); \
@@ -913,7 +913,7 @@ static void vm_loop(su_state *s, function_t *func) {
 		STK(-2)->obj.b = STK(-2)->obj.num op STK(-1)->obj.num; \
 		su_pop(s, 1); \
 		break;
-	
+
 	for (s->pc = 0; s->pc < s->prot->num_inst; s->pc++) {
 		if (s->interupt) {
 			if ((s->interupt & IGC) == IGC)
@@ -991,7 +991,7 @@ static void vm_loop(su_state *s, function_t *func) {
 				s->pc = s->frame->ret_addr - 1;
 				s->prot = s->frame->func->prot;
 				func = s->frame->func;
-				
+
 				s->stack[s->frame->stack_top] = *STK(-1);
 				s->stack_top = s->frame->stack_top + 1;
 				s->frame_top--;
@@ -1005,12 +1005,12 @@ static void vm_loop(su_state *s, function_t *func) {
 				s->pc = s->frame->ret_addr - 1;
 				s->prot = s->frame->func->prot;
 				func = s->frame->func;
-				
+
 				memcpy(&s->stack[s->frame->stack_top], &s->stack[s->stack_top - (inst.a + 1)], sizeof(value_t) * (inst.a + 1));
 				s->stack_top = s->frame->stack_top + inst.a + 1;
 				s->frame_top--;
 				s->frame = FRAME();
-				
+
 				/* Do a normal call. */
 			case OP_CALL:
 				tmp = s->stack_top - inst.a - 1;
@@ -1020,17 +1020,17 @@ static void vm_loop(su_state *s, function_t *func) {
 					s->frame->ret_addr = s->pc + 1;
 					s->frame->func = func;
 					s->frame->stack_top = tmp;
-				
+
 					func = s->stack[tmp].obj.func;
 					if (func->narg < 0)
 						push_varg(s, inst.a);
 					else if (func->narg != inst.a)
 						su_error(s, "Bad number of arguments to function! Expected %i, but got %i.", (int)func->narg, (int)inst.a);
-					
+
 					assert(s->stack_top + func->num_ups <= STACK_SIZE);
 					memcpy(&s->stack[s->stack_top], func->upvalues, sizeof(value_t) * func->num_ups);
 					s->stack_top += func->num_ups;
-					
+
 					s->prot = func->prot;
 					s->pc = -1;
 				} else if (s->stack[tmp].type == SU_NATIVEFUNC) {
@@ -1102,7 +1102,7 @@ static void vm_loop(su_state *s, function_t *func) {
 			default:
 				assert(0);
 		}
-		
+
 		#undef ARITH_OP
 		#undef LOG_OP
 	}
@@ -1115,16 +1115,16 @@ void su_call(su_state *s, int narg, int nret) {
 	value_t *f = &s->stack[top];
 	frame_t *frame = &s->frames[s->frame_top++];
 	assert(s->frame_top <= MAX_CALLS);
-	
+
 	frame->ret_addr = 0xffff;
 	frame->func = f->obj.func;
 	frame->stack_top = top;
-	
+
 	pc = s->pc;
 	prot = s->prot;
 	tmp = s->narg;
 	s->narg = narg;
-	
+
 	if (f->type == SU_FUNCTION) {
 		su_assert(s, f->obj.func->narg < 0 || f->obj.func->narg == narg, "Bad number of argument to function!");
 		vm_loop(s, f->obj.func);
@@ -1144,7 +1144,7 @@ void su_call(su_state *s, int narg, int nret) {
 	} else {
 		assert(0);
 	}
-	
+
 	s->narg = tmp;
 	s->prot = prot;
 	s->pc = pc;
@@ -1189,23 +1189,23 @@ su_state *su_init(su_alloc alloc) {
 	s->num_objects = 0;
 	s->gc_gray_size = 0;
 	s->gc_root = NULL;
-	
+
 	s->fstdin = stdin;
 	s->fstdout = stdout;
 	s->fstderr = stderr;
-	
+
 	s->stack_top = 0;
 	s->frame_top = 0;
 	s->narg = 0;
 	s->pc = 0xffff;
 	s->interupt = 0x0;
-	
+
 	s->reader_pad = NULL;
 	s->reader_pad_size = 0;
 	s->reader_pad_top = 0;
-	
+
 	s->errtop = -1;
-	
+
 	s->strings = map_create_empty(s);
 	s->globals = map_create_empty(s);
 	update_global_ref(s);
@@ -1217,10 +1217,10 @@ void su_close(su_state *s) {
 	s->globals.type = SU_NIL;
 	s->strings.type = SU_NIL;
 	su_gc(s);
-	
+
 	if (s->fstdin != stdin) fclose(s->fstdin);
 	if (s->fstdout != stdout) fclose(s->fstdout);
 	if (s->fstderr != stderr) fclose(s->fstderr);
-	
+
 	s->alloc(s, 0);
 }

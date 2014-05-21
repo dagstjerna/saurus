@@ -17,6 +17,9 @@ solution "saurus"
          links { "m" }
       end
 
+      if os.getenv("SU_OPT_NO_FILE_IO") then defines { "SU_OPT_NO_FILE_IO" } end
+      if os.getenv("SU_OPT_DYNLIB") then defines { "SU_OPT_DYNLIB" } end
+      
       configuration "Debug"
          defines { "DEBUG" }
          flags { "Symbols" }
