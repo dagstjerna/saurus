@@ -5,13 +5,33 @@ require("pack")
 
 solution "saurus"
    configurations { "Debug", "Release" }
+
+   configuration "Debug"
+      defines { "DEBUG" }
+      flags { "Symbols" }
  
+   configuration "Release"
+      defines { "RELEASE" }
+      flags { "Optimize" }
+
+   project "scales"
+      kind "ConsoleApp"
+      language "C"
+      includedirs { "src/scales", "src/vm" }
+      links { "git2" }
+      files { "src/scales/*.h", "src/scales/*.c" }
+
    project "saurus"
       kind "ConsoleApp"
       language "C"
       includedirs { "lua" }
-      files { "src/**.h", "src/**.c", "lua/**.h", "lua/**.c" }
- 
+      files {
+         "src/vm/*.h", "src/vm/*.c",
+         "src/repl/*.h", "src/repl/*.c",
+         "src/compiler/*.h", "src/compiler/*.c",
+         "lua/**.h", "lua/**.c"
+      }
+
       if gcc then
          buildoptions { "-ansi", "-pedantic" }
          links { "m" }
@@ -19,11 +39,3 @@ solution "saurus"
 
       if os.getenv("SU_OPT_NO_FILE_IO") then defines { "SU_OPT_NO_FILE_IO" } end
       if os.getenv("SU_OPT_DYNLIB") then defines { "SU_OPT_DYNLIB" } end
-      
-      configuration "Debug"
-         defines { "DEBUG" }
-         flags { "Symbols" }
- 
-      configuration "Release"
-         defines { "RELEASE" }
-         flags { "Optimize" }
