@@ -29,7 +29,6 @@
 #include "intern.h"
 
 #define ALIVE_OBJECTS 100000
-#define GC_GENERATIONS 0
 
 enum {
 	GC_FLAG_TRANS,

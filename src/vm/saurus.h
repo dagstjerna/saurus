@@ -29,6 +29,8 @@
 #include <stdio.h>
 #include <setjmp.h>
 
+#include "options.h"
+
 typedef struct state su_state;
 
 enum {
@@ -47,6 +49,11 @@ typedef enum su_object_type su_object_type_t;
 typedef int (*su_nativefunc)(su_state*,int);
 typedef const void* (*su_reader)(size_t*,void*);
 typedef void* (*su_alloc)(void*,size_t);
+
+typedef struct {
+	/* Fix this */
+	int _;
+} su_data_class_t;
 
 su_state *su_init(su_alloc alloc);
 void su_close(su_state *s);
@@ -78,6 +85,8 @@ void su_pushstring(su_state *s, const char *str);
 const char *su_tostring(su_state *s, int idx, unsigned *size);
 void su_pushpointer(su_state *s, void *ptr);
 void *su_topointer(su_state *s, int idx);
+void *su_newdata(su_state *s, unsigned size, const su_data_class_t *vt);
+void *su_todata(su_state *s, const su_data_class_t *vt);
 
 void su_ref_local(su_state *s, int idx);
 void su_unref_local(su_state *s, int idx);

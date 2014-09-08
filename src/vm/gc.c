@@ -32,7 +32,7 @@
 static void free_prot(su_state *s, prototype_t *prot);
 
 static void add_to_gray(su_state *s, gc_t *obj) {
-	if (obj->flags != GC_FLAG_WHITE || obj->gen > s->gc_gen)
+	if (obj->flags != GC_FLAG_WHITE)
 		return;
 	assert(s->gc_gray_size <= GC_GRAY_SIZE);
 	obj->flags = GC_FLAG_GRAY;
@@ -191,7 +191,7 @@ static void end(su_state *s) {
 	gc_t *obj = s->gc_root;
 
 	while (obj) {
-		if (obj->flags == GC_FLAG_WHITE && obj->gen <= s->gc_gen) {
+		if (obj->flags == GC_FLAG_WHITE) {
 			if (prev)
 				prev->next = obj->next;
 			else
@@ -202,14 +202,10 @@ static void end(su_state *s) {
 			s->num_objects--;
 		} else {
 			obj->flags = GC_FLAG_WHITE;
-			if (obj->gen < GC_GENERATIONS)
-				obj->gen++;
 			prev = obj;
 			obj = obj->next;
 		}
 	}
-	
-	s->gc_gen = s->gc_gen == GC_GENERATIONS ? 0 : s->gc_gen + 1;
 }
 
 void gc_trace(su_state *s) {

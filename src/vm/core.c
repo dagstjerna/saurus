@@ -235,6 +235,8 @@ unsigned hash_value(value_t *v) {
 			return (unsigned)v->obj.b + (unsigned)SU_BOOLEAN;
 		case SU_NUMBER:
 			return murmur(&v->obj.num, sizeof(double), (unsigned)SU_NUMBER);
+		case SU_STRING:
+			return v->obj.str->hash;
 		default:
 			return murmur(&v->obj.ptr, sizeof(void*), (unsigned)v->type);
 	}
@@ -243,7 +245,6 @@ unsigned hash_value(value_t *v) {
 gc_t *gc_insert_object(su_state *s, gc_t *obj, su_object_type_t type) {
 	obj->type = type;
 	obj->flags = GC_FLAG_TRANS;
-	obj->gen = 0;
 	obj->next = s->gc_root;
 	s->gc_root = obj;
 	s->num_objects++;
@@ -1185,7 +1186,6 @@ su_state *su_init(su_alloc alloc) {
 	su_state *s = (su_state*)mf(NULL, sizeof(su_state));
 	s->alloc = mf;
 
-	s->gc_gen = 0;
 	s->num_objects = 0;
 	s->gc_gray_size = 0;
 	s->gc_root = NULL;

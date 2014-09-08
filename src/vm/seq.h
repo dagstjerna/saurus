@@ -56,12 +56,16 @@ typedef node_t* (*node_without_func_t)(su_state *s, node_t *n, int hash, value_t
 typedef node_leaf_t* (*node_find_func_t)(su_state *s, node_t *n, int hash, value_t *key);
 typedef int (*node_get_hash_t)(su_state *s, node_t *n);
 
-struct node {
-	gc_t gc;
+typedef struct {
 	node_set_func_t set;
 	node_without_func_t without;
 	node_find_func_t find;
 	node_get_hash_t get_hash;
+} node_class_t;
+
+struct node {
+	gc_t gc;
+	const node_class_t *vt;
 };
 
 struct node_leaf {
@@ -108,10 +112,14 @@ int map_length(map_t *m);
 
 typedef value_t (*seq_fr_func_t)(su_state *s, seq_t *q);
 
-struct seq {
-	gc_t gc;
+typedef struct {
 	seq_fr_func_t first;
 	seq_fr_func_t rest;
+} seq_class_t;
+
+struct seq {
+	gc_t gc;
+	const seq_class_t *vt;
 };
 
 typedef struct {

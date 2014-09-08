@@ -25,6 +25,8 @@
 #ifndef _OPTIONS_H_
 #define _OPTIONS_H_
 
+#define SU_VALUE_DATA_SIZE 15
+
 /* #define SU_OPT_DYNLIB */
 /* #define SU_OPT_NO_FILE_IO */
 

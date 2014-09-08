@@ -23,6 +23,7 @@
 --******************************************************************************--
 
 local STRINGBOUND_CHARS = "\""
+local STRINGESC_CHAR = "^"
 local SPECIAL_CHARS = "[]{}()@',"
 local COMMENT_CHARS = ";"
 
@@ -74,13 +75,44 @@ local function read_space(stream)
 	end
 end
 
+local function read_string_esc(stream, bound)
+	local err = "Unexpected end of string!"
+	local ch = stream:read(1)
+
+	if not ch then
+		read_error(err, stream)
+	elseif ch == "\"" then
+		return ch
+	elseif ch == "n" then
+		return "\n"
+	elseif ch == "r" then
+		return "\r"
+	elseif ch == "t" then
+		return "\t"
+	elseif ch == "^" then
+		return "^"
+	elseif ch == "!" then
+		ch = stream:read(1)
+		if not ch then
+			read_error(err, stream)
+		else
+			bound[1] = ch
+		end
+		return ""
+	end
+	read_error("Invalid escape character: '" .. ch .. "'", stream)
+end
+
 local function read_string(stream)
 	local str = ""
+	local bound = {STRINGBOUND_CHAR}
 	while true do
 		local ch = stream:read(1)
 		if not ch then
 			read_error("Unexpected end of string!", stream)
-		elseif not is_chars(STRINGBOUND_CHARS, ch) then
+		elseif STRINGESC_CHAR == ch then
+			str = str .. read_string_esc(stream, bound)
+		elseif ch ~= bound[1] then
 			str = str .. ch
 		else
 			return str

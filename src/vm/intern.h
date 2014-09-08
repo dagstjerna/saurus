@@ -31,7 +31,6 @@
 #include <stdio.h>
 #include <setjmp.h>
 
-#define MAX_THREADS 1024
 #define MAX_CALLS 128
 #define STACK_SIZE 512
 #define SCRATCH_PAD_SIZE 512
@@ -100,7 +99,6 @@ struct gc {
 	gc_t *next;
 	unsigned char type;
 	unsigned char flags;
-	unsigned char gen;
 };
 
 typedef struct {
@@ -123,6 +121,12 @@ typedef struct {
 	} obj;
 } const_t;
 
+typedef struct {
+	gc_t gc;
+	su_data_class_t *vt;
+	unsigned char data[1];
+} native_data_t;
+
 struct value {
 	union {
 		int b;
@@ -137,7 +141,9 @@ struct value {
 		map_t *m;
 		node_t *map_node;
 		local_t *loc;
+		native_data_t *data;
 		void *ptr;
+		unsigned char value_data[SU_VALUE_DATA_SIZE];
 	} obj;
 	unsigned char type;
 };
@@ -183,7 +189,6 @@ struct state {
 	gc_t *gc_gray[GC_GRAY_SIZE];
 	unsigned gc_gray_size;
 	unsigned num_objects;
-	unsigned char gc_gen;
 
 	value_t globals;
 	value_t strings;

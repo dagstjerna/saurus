@@ -38,6 +38,8 @@ static value_t cell_rest(su_state *s, seq_t *q) {
 	return ((cell_seq_t*)q)->rest;
 }
 
+const seq_class_t cell_vt = {&cell_first, &cell_rest};
+
 value_t cell_create_array(su_state *s, value_t *array, int num) {
 	int i;
 	value_t tmp;
@@ -47,8 +49,7 @@ value_t cell_create_array(su_state *s, value_t *array, int num) {
 	for (i = num - 1; i >= 0; i--) {
 		cell->first = array[i];
 		cell->rest = tmp;
-		cell->q.first = &cell_first;
-		cell->q.rest = &cell_rest;
+		cell->q.vt = &cell_vt;
 		tmp.type = CELL_SEQ;
 		tmp.obj.gc_object = gc_insert_object(s, &cell->q.gc, CELL_SEQ);
 		cell++;
@@ -62,8 +63,7 @@ value_t cell_create(su_state *s, value_t *first, value_t *rest) {
 	cell_seq_t *cell = (cell_seq_t*)su_allocate(s, NULL, sizeof(cell_seq_t));
 	cell->first = *first;
 	cell->rest = *rest;
-	cell->q.first = &cell_first;
-	cell->q.rest = &cell_rest;
+	cell->q.vt = &cell_vt;
 	
 	v.type = CELL_SEQ;
 	v.obj.gc_object = gc_insert_object(s, &cell->q.gc, CELL_SEQ);
@@ -75,8 +75,7 @@ static value_t it_next(su_state *s, it_seq_t *iq) {
 	it_seq_t *it = (it_seq_t*)su_allocate(s, NULL, sizeof(it_seq_t));
 	it->idx = iq->idx + 1;
 	it->obj = iq->obj;
-	it->q.first = iq->q.first;
-	it->q.rest = iq->q.rest;
+	it->q.vt = iq->q.vt;
 	
 	v.type = IT_SEQ;
 	v.obj.gc_object = gc_insert_object(s, &it->q.gc, IT_SEQ);
@@ -123,6 +122,8 @@ static value_t it_vector_rest(su_state *s, seq_t *q) {
 	return it_next(s, iq);
 }
 
+const seq_class_t it_vt = {&it_vector_first, &it_vector_rest};
+
 value_t it_create_vector(su_state *s, vector_t *vec) {
 	value_t v;
 	it_seq_t *it;
@@ -135,8 +136,7 @@ value_t it_create_vector(su_state *s, vector_t *vec) {
 	it = (it_seq_t*)su_allocate(s, NULL, sizeof(it_seq_t));
 	it->idx = 0;
 	it->obj = (gc_t*)vec;
-	it->q.first = &it_vector_first;
-	it->q.rest = &it_vector_rest;
+	it->q.vt = &it_vt;
 	
 	v.type = IT_SEQ;
 	v.obj.gc_object = gc_insert_object(s, &it->q.gc, IT_SEQ);
@@ -155,8 +155,7 @@ value_t it_create_string(su_state *s, string_t *str) {
 	it = (it_seq_t*)su_allocate(s, NULL, sizeof(it_seq_t));
 	it->idx = 0;
 	it->obj = (gc_t*)str;
-	it->q.first = &it_string_first;
-	it->q.rest = &it_string_rest;
+	it->q.vt = &it_vt;
 	
 	v.type = IT_SEQ;
 	v.obj.gc_object = gc_insert_object(s, &it->q.gc, IT_SEQ);
@@ -164,11 +163,11 @@ value_t it_create_string(su_state *s, string_t *str) {
 }
 
 value_t seq_first(su_state *s, seq_t *q) {
-	return q->first(s, q);
+	return q->vt->first(s, q);
 }
 
 value_t seq_rest(su_state *s, seq_t *q) {
-	return q->rest(s, q);
+	return q->vt->rest(s, q);
 }
 
 /* --------------------------------- Vector implementation --------------------------------- */
@@ -432,7 +431,7 @@ static node_t *full_node_set(su_state *s, node_t *n, int shift, int hash, value_
 	
 	idx = MASK(hash, shift);
 	tmp = thiz->nodes->data[idx].obj.map_node;
-	tmp = tmp->set(s, tmp, shift + 5, hash, key, val, added_leaf);
+	tmp = tmp->vt->set(s, tmp, shift + 5, hash, key, val, added_leaf);
 	if (tmp == thiz->nodes->data[idx].obj.map_node) {
 		return n;
 	} else {
@@ -453,7 +452,7 @@ static node_t *full_node_without(su_state *s, node_t *n, int hash, value_t *key)
 	
 	idx = MASK(hash, thiz->shift);
 	tmp = thiz->nodes->data[idx].obj.map_node;
-	tmp = tmp->without(s, tmp, hash, key);
+	tmp = tmp->vt->without(s, tmp, hash, key);
 	if (tmp != thiz->nodes->data[idx].obj.map_node) {
 		if (!tmp) {
 			new_nodes = node_create_only(s, thiz->nodes->len - 1);
@@ -475,7 +474,7 @@ static node_leaf_t *full_node_find(su_state *s, node_t *n, int hash, value_t *ke
 	node_t *tmp;
 	CAST_AND_TEST(node_full_t, MAP_FULL);
 	tmp = thiz->nodes->data[MASK(hash, thiz->shift)].obj.map_node;
-	return tmp->find(s, tmp, hash, key);
+	return tmp->vt->find(s, tmp, hash, key);
 }
 
 static int full_node_get_hash(su_state *s, node_t *n) {
@@ -483,19 +482,23 @@ static int full_node_get_hash(su_state *s, node_t *n) {
 	return thiz->hash;
 }
 
+const node_class_t full_vt = {
+	&full_node_set,
+	&full_node_without,
+	&full_node_find,
+	&full_node_get_hash
+};
+
 static node_t *create_full_node(su_state *s, vector_node_t *nodes, int shift) {
 	node_t *tmp, *n;
 	node_full_t *fn = (node_full_t*)su_allocate(s, NULL, sizeof(node_full_t));
 	fn->nodes = nodes;
 	fn->shift = shift;
 	tmp = nodes->data[0].obj.map_node;
-	fn->hash = tmp->get_hash(s, tmp);
+	fn->hash = tmp->vt->get_hash(s, tmp);
 	
 	n = (node_t*)fn;
-	n->set = &full_node_set;
-	n->without = &full_node_without;
-	n->find = &full_node_find;
-	n->get_hash = &full_node_get_hash;
+	n->vt = &full_vt;
 	return (node_t*)gc_insert_object(s, (gc_t*)n, MAP_FULL);
 }
 
@@ -517,7 +520,7 @@ static node_t *idx_node_set(su_state *s, node_t *n, int shift, int hash, value_t
 	
 	if ((thiz->bitmap & bit) != 0) {
 		tmp = thiz->nodes->data[idx].obj.map_node;
-		tmp = tmp->set(s, tmp, shift + 5, hash, key, val, added_leaf);
+		tmp = tmp->vt->set(s, tmp, shift + 5, hash, key, val, added_leaf);
 		if (tmp == thiz->nodes->data[idx].obj.map_node) {
 			return n;
 		} else {
@@ -548,7 +551,7 @@ static node_t *idx_node_without(su_state *s, node_t *n, int hash, value_t *key) 
 	if ((thiz->bitmap & bit) != 0) {
 		idx = idx_node_index(n, bit);
 		tmp = thiz->nodes->data[idx].obj.map_node;
-		tmp = tmp->without(s, tmp, hash, key);
+		tmp = tmp->vt->without(s, tmp, hash, key);
 		if (tmp != thiz->nodes->data[idx].obj.map_node) {
 			if (!tmp) {
 				if (thiz->bitmap == bit)
@@ -576,7 +579,7 @@ static node_leaf_t *idx_node_find(su_state *s, node_t *n, int hash, value_t *key
 	bit = BITPOS(hash, thiz->shift);
 	if ((thiz->bitmap & bit) != 0) {
 		tmp = thiz->nodes->data[idx_node_index(n, bit)].obj.map_node;
-		return tmp->find(s, tmp, hash, key);
+		return tmp->vt->find(s, tmp, hash, key);
 	} else {
 		return NULL;
 	}
@@ -587,6 +590,13 @@ static int idx_node_get_hash(su_state *s, node_t *n) {
 	return thiz->hash;
 }
 
+const node_class_t idx_vt = {
+	&idx_node_set,
+	&idx_node_without,
+	&idx_node_find,
+	&idx_node_get_hash
+};
+
 static node_t *create_idx_node(su_state *s, int bitmap, vector_node_t *nodes, int shift) {
 	node_t *n;
 	node_t *tmp;
@@ -595,13 +605,10 @@ static node_t *create_idx_node(su_state *s, int bitmap, vector_node_t *nodes, in
 	in->shift = shift;
 	in->nodes = nodes;
 	tmp = nodes->data[0].obj.map_node;
-	in->hash = tmp->get_hash(s, tmp);
+	in->hash = tmp->vt->get_hash(s, tmp);
 	
 	n = (node_t*)in;
-	n->set = &idx_node_set;
-	n->without = &idx_node_without;
-	n->find = &idx_node_find;
-	n->get_hash = &idx_node_get_hash;
+	n->vt = &idx_vt;
 	return (node_t*)gc_insert_object(s, (gc_t*)n, MAP_IDX);
 }
 
@@ -620,8 +627,8 @@ static node_t *create_idx_node3(su_state *s, int shift, node_t *branch, int hash
 	v.obj.map_node = branch;
 	vec = node_create1(s, &v);
 	
-	n = create_idx_node(s, BITPOS(branch->get_hash(s, branch), shift), vec, shift);
-	return n->set(s, n, shift, hash, key, val, added_leaf);
+	n = create_idx_node(s, BITPOS(branch->vt->get_hash(s, branch), shift), vec, shift);
+	return n->vt->set(s, n, shift, hash, key, val, added_leaf);
 }
 
 /* Collision node */
@@ -632,7 +639,7 @@ static int collision_node_find_index(su_state *s, node_t *n, int hash, value_t *
 	CAST_AND_TEST(node_collision_t, MAP_COLLISION);
 	for (i = 0; i < thiz->leaves->len; i++) {
 		tmp = thiz->leaves->data[i].obj.map_node;
-		if (tmp->find(s, tmp, hash, key))
+		if (tmp->vt->find(s, tmp, hash, key))
 			return i;
 	}
 	return -1;
@@ -703,6 +710,13 @@ static int collision_node_get_hash(su_state *s, node_t *n) {
 	return thiz->hash;
 }
 
+const node_class_t collision_vt = {
+	&collision_node_set,
+	&collision_node_without,
+	&collision_node_find,
+	&collision_node_get_hash
+};
+
 static node_t *create_collision_node(su_state *s, int hash, vector_node_t *leaves) {
 	node_t *n;
 	node_collision_t *cn = (node_collision_t*)su_allocate(s, NULL, sizeof(node_collision_t));
@@ -710,10 +724,7 @@ static node_t *create_collision_node(su_state *s, int hash, vector_node_t *leave
 	cn->leaves = leaves;
 	
 	n = (node_t*)cn;
-	n->set = &collision_node_set;
-	n->without = &collision_node_without;
-	n->find = &collision_node_find;
-	n->get_hash = &collision_node_get_hash;
+	n->vt = &collision_vt;
 	return (node_t*)gc_insert_object(s, (gc_t*)n, MAP_COLLISION);
 }
 
@@ -760,6 +771,13 @@ static int leaf_node_get_hash(su_state *s, node_t *n) {
 	return thiz->hash;
 }
 
+const node_class_t leaf_vt = {
+	&leaf_node_set,
+	&leaf_node_without,
+	&leaf_node_find,
+	&leaf_node_get_hash
+};
+
 static node_t *create_leaf_node(su_state *s, int hash, value_t *key, value_t *val) {
 	node_t *n;
 	node_leaf_t *ln = (node_leaf_t*)su_allocate(s, NULL, sizeof(node_leaf_t));
@@ -768,10 +786,7 @@ static node_t *create_leaf_node(su_state *s, int hash, value_t *key, value_t *va
 	ln->val = *val;
 	
 	n = (node_t*)ln;
-	n->set = &leaf_node_set;
-	n->without = &leaf_node_without;
-	n->find = &leaf_node_find;
-	n->get_hash = &leaf_node_get_hash;
+	n->vt = &leaf_vt;
 	return (node_t*)gc_insert_object(s, (gc_t*)n, MAP_LEAF);
 }
 
@@ -803,12 +818,16 @@ static int empty_node_get_hash(su_state *s, node_t *n) {
 	return 0;
 }
 
+const node_class_t empty_vt = {
+	&empty_node_set,
+	&empty_node_without,
+	&empty_node_find,
+	&empty_node_get_hash
+};
+
 static node_t *create_empty_node(su_state *s) {
 	node_t *n = (node_t*)su_allocate(s, NULL, sizeof(node_t));
-	n->set = &empty_node_set;
-	n->without = &empty_node_without;
-	n->find = &empty_node_find;
-	n->get_hash = &empty_node_get_hash;
+	n->vt = &empty_vt;
 	return (node_t*)gc_insert_object(s, &n->gc, MAP_EMPTY);
 }
 
@@ -830,7 +849,7 @@ value_t map_create_empty(su_state *s) {
 
 value_t map_get(su_state *s, map_t *m, value_t *key, unsigned hash) {
 	value_t v;
-	node_leaf_t *n = m->root->find(s, m->root, (int)hash, key);
+	node_leaf_t *n = m->root->vt->find(s, m->root, (int)hash, key);
 	if (!n) {
 		v.type = SU_INV;
 		return v;
@@ -840,7 +859,7 @@ value_t map_get(su_state *s, map_t *m, value_t *key, unsigned hash) {
 
 value_t map_remove(su_state *s, map_t *m, value_t *key, unsigned hash) {
 	value_t v;
-	node_t *new_root = m->root->without(s, m->root, (int)hash, key);
+	node_t *new_root = m->root->vt->without(s, m->root, (int)hash, key);
 	v.type = SU_MAP;
 	if (new_root == m->root) {
 		v.obj.m = m;
@@ -854,7 +873,7 @@ value_t map_remove(su_state *s, map_t *m, value_t *key, unsigned hash) {
 value_t map_insert(su_state *s, map_t *m, value_t *key, unsigned hash, value_t *val) {
 	value_t v;
 	node_t *added_leaf = NULL;
-	node_t *new_root = m->root->set(s, m->root, 0, (int)hash, key, val, &added_leaf);
+	node_t *new_root = m->root->vt->set(s, m->root, 0, (int)hash, key, val, &added_leaf);
 	if (new_root == m->root) {
 		v.type = SU_MAP;
 		v.obj.m = m;
@@ -904,7 +923,10 @@ static value_t it_seq_vector_rest(su_state *s, seq_t *q) {
 		return v;
 	return it_seq_create_with_index(s, itq->obj, itq->idx + 1);
 }
-	
+
+const seq_class_t seq_string_vt = {&it_seq_string_first, &it_seq_string_rest};
+const seq_class_t seq_vector_vt = {&it_seq_vector_first, &it_seq_vector_rest};
+
 static value_t it_seq_create_with_index(su_state *s, gc_t *obj, int idx) {
 	value_t v;
 	it_seq_t *q = (it_seq_t*)su_allocate(s, NULL, sizeof(it_seq_t));
@@ -912,14 +934,7 @@ static value_t it_seq_create_with_index(su_state *s, gc_t *obj, int idx) {
 	q->obj = obj;
 	q->idx = idx;
 	
-	if (v.type == SU_STRING) {
-		q->q.first = &it_seq_string_first;
-		q->q.rest = &it_seq_string_rest;
-	} else {
-		q->q.first = &it_seq_vector_first;
-		q->q.rest = &it_seq_vector_rest;
-	}
-	
+	q->q.vt = v.type == SU_STRING ? &seq_string_vt : &seq_vector_vt;
 	v.obj.gc_object = gc_insert_object(s, &q->q.gc, IT_SEQ);
 	return v;
 }
