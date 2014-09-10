@@ -421,25 +421,28 @@ local function isspecial(sexp)
 	end
 end
 
-local function list_to_vec(sexp, line, macro_name)
+local function list_to_vec(sexp, line, macro_name, quoted)
 	local vec = {}
+	local q = (quoted and (sexp[1] ~= "unquote")) or (sexp[1] == "quote")
 	while sexp ~= nil_substitute do
-		table.insert(vec, recreate_ast(sexp[1], line, macro_name))
+		table.insert(vec, recreate_ast(sexp[1], line, macro_name, q))
 		sexp = sexp[2]
 	end
 	return vec
 end
 
-function recreate_ast(sexp, line, macro_name)
+function recreate_ast(sexp, line, macro_name, quoted)
 	local sexp_type = type(sexp)
 	if sexp == nil_substitute then
 		return {type = "SYMBOL", line = line, atom = "nil"}
-	elseif sexp_type == "string" or sexp_type == "number" then
-		return {type = "STRING", line = line, atom = sexp}
+	elseif sexp_type == "number" then
+		return {type = "NUMBER", line = line, atom = sexp}
+	elseif sexp_type == "string" then
+		return {type = quoted and "STRING" or "SYMBOL", line = line, atom = sexp}
 	elseif sexp_type == "boolean" then
 		return {type = "SYMBOL", line = line, atom = sexp and "true" or "false"}
 	elseif sexp_type == "table" then
-		return {type = "SEXP", line = line, data = list_to_vec(sexp, line, macro_name)}
+		return {type = "SEXP", line = line, data = list_to_vec(sexp, line, macro_name, quoted)}
 	else
 		gen_error("Invalid expansion result from macro '" .. macro_name .. "'.", line)
 	end
