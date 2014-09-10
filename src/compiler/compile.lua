@@ -62,43 +62,6 @@ for i,v in ipairs(instruction_set) do
 	instruction_matrix[v] = i - 1
 end
 
-local function inspect(func, fp, lv)
-	fp:write(lv .. "; ------- inst -------\n")
-	fp:write(lv .. tostring(#func.instructions) .. " ; Numumber of instructions.\n")
-	for i,v in ipairs(func.instructions) do
-		fp:write(lv)
-		for _,param in ipairs(v) do
-			fp:write(tostring(param) .. " ")
-		end
-		if i <= #func.linenr then
-			fp:write(" ; " .. tostring(func.linenr[i]) .. "\n")
-		else
-			fp:write("\n")
-		end
-	end
-	fp:write(lv .. "; ------- const -------\n")
-	fp:write(lv .. tostring(#func.const) .. " ; Numumber of constants.\n")
-	for _,v in ipairs(func.const) do
-		fp:write(lv .. tostring(v) .. "\n")
-	end
-	fp:write(lv .. "; ------- up values -------\n")
-	fp:write(lv .. tostring(#func.up) .. " ; Numumber of up values.\n")
-	for _,v in ipairs(func.up) do
-		fp:write(lv .. tostring(v[1]) .. ", " .. tostring(v[2]) .. "\n")
-	end
-	fp:write(lv .. "; ------- prot -------\n")
-	fp:write(lv .. tostring(#func.prot) .. " ; Numumber of prototypes.\n")
-	for _,v in ipairs(func.prot) do
-		inspect(v, fp, lv .. "\t")
-	end
-	fp:write(lv .. "; ------- debug info -------\n")
-	fp:write(lv .. (func.name or "nil") .. " ; Name\n")
-	fp:write(lv .. tostring(#func.linenr) .. " ; Line info.\n")
-	for _,v in ipairs(func.linenr) do
-		fp:write(lv .. tostring(v) .. "\n")
-	end
-end
-
 local function compile_func(func, fp)
 	fp:write(writebin.uint32(#func.instructions))
 	for _,v in ipairs(func.instructions) do
@@ -147,9 +110,47 @@ local function compile_func(func, fp)
 	end
 end
 
+function inspect(func, fp, lv)
+	lv = lv or ""
+	fp:write(lv .. "; ------- inst -------\n")
+	fp:write(lv .. tostring(#func.instructions) .. " ; Numumber of instructions.\n")
+	for i,v in ipairs(func.instructions) do
+		fp:write(lv)
+		for _,param in ipairs(v) do
+			fp:write(tostring(param) .. " ")
+		end
+		if i <= #func.linenr then
+			fp:write(" ; " .. tostring(func.linenr[i]) .. "\n")
+		else
+			fp:write("\n")
+		end
+	end
+	fp:write(lv .. "; ------- const -------\n")
+	fp:write(lv .. tostring(#func.const) .. " ; Numumber of constants.\n")
+	for _,v in ipairs(func.const) do
+		fp:write(lv .. tostring(v) .. "\n")
+	end
+	fp:write(lv .. "; ------- up values -------\n")
+	fp:write(lv .. tostring(#func.up) .. " ; Numumber of up values.\n")
+	for _,v in ipairs(func.up) do
+		fp:write(lv .. tostring(v[1]) .. ", " .. tostring(v[2]) .. "\n")
+	end
+	fp:write(lv .. "; ------- prot -------\n")
+	fp:write(lv .. tostring(#func.prot) .. " ; Numumber of prototypes.\n")
+	for _,v in ipairs(func.prot) do
+		inspect(v, fp, lv .. "\t")
+	end
+	fp:write(lv .. "; ------- debug info -------\n")
+	fp:write(lv .. (func.name or "nil") .. " ; Name\n")
+	fp:write(lv .. tostring(#func.linenr) .. " ; Line info.\n")
+	for _,v in ipairs(func.linenr) do
+		fp:write(lv .. tostring(v) .. "\n")
+	end
+end
+
 function compile(func, name, fp)
 	func.name = name or "?"
-	--inspect(func, io.stdout, "")
+	--inspect(func, io.stdout)
 	fp = fp or io.stdout
 
 	fp:write(writebin.header(SAURUS_VERSION[1], SAURUS_VERSION[2]))

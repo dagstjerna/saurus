@@ -22,7 +22,7 @@
 --*    distribution.                                                           *--
 --******************************************************************************--
 
-local STRINGBOUND_CHARS = "\""
+local STRINGBOUND_CHAR = "\""
 local STRINGESC_CHAR = "^"
 local SPECIAL_CHARS = "[]{}()@',"
 local COMMENT_CHARS = ";"
@@ -55,7 +55,7 @@ local function read_atom(stream)
 		local ch = stream:read(1)
 		if not ch then
 			return
-		elseif not is_chars(SPECIAL_CHARS .. COMMENT_CHARS .. STRINGBOUND_CHARS, ch) and not is_space(ch) then
+		elseif not is_chars(SPECIAL_CHARS .. COMMENT_CHARS .. STRINGBOUND_CHAR, ch) and not is_space(ch) then
 			str = str .. ch
 		else
 			stream:unread(ch)
@@ -127,7 +127,7 @@ local function next_token(stream)
 			return
 		elseif is_chars(COMMENT_CHARS, ch) then
 			read_comment(stream)
-		elseif is_chars(STRINGBOUND_CHARS, ch) then
+		elseif is_chars(STRINGBOUND_CHAR, ch) then
 			return {type = "STRING", atom = read_string(stream), line = stream:line()}
 		elseif is_chars(SPECIAL_CHARS, ch) then
 			return ch

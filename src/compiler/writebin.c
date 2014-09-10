@@ -32,6 +32,8 @@
 #include <lauxlib.h>
 
 #include "../vm/saurus.h"
+#include "../vm/intern.h"
+#include "../vm/seq.h"
 
 typedef struct {
 	char sign[4];
@@ -140,8 +142,74 @@ int su_close_wrp(lua_State *L) {
 	return 0;
 }
 
+static int push_sexp(lua_State *L, su_state *s, value_t v);
+
+static int push_sexp(lua_State *L, su_state *s, value_t v) {
+	int ret = 0;
+	int top = lua_gettop(L);
+	switch (v.type) {
+		case SU_NIL:
+			lua_getglobal(L, "nil_substitute");
+			return ret;
+		case SU_NUMBER:
+			lua_pushnumber(L, v.obj.num);
+			return ret;
+		case SU_BOOLEAN:
+			lua_pushboolean(L, v.obj.b);
+			return ret;
+		case SU_STRING:
+			lua_pushlstring(L, v.obj.str->str, v.obj.str->size - 1);
+			return ret;
+		case SU_SEQ:
+		case IT_SEQ:
+		case CELL_SEQ:
+			lua_newtable(L);
+			lua_pushinteger(L, 1);
+			ret = push_sexp(L, s, seq_first(s, v.obj.q));
+			if (ret) goto err;
+			lua_settable(L, -3);
+			lua_pushinteger(L, 2);
+			ret = push_sexp(L, s, seq_rest(s, v.obj.q));
+			if (ret) goto err;
+			lua_settable(L, -3);
+			return ret;
+		default:
+			return (int)v.type;
+	}
+err:
+	lua_settop(L, top);
+	return ret;
+}
+
+const char *code = NULL;
+
+static const void *reader(size_t *size, void *data) {
+	const char *tmp = code;
+	if (!size) return NULL;
+	if (!code) {
+		*size = 0;
+		return NULL;
+	}
+	code = NULL;
+	*size = *(int*)data;
+	return (*size > 0) ? tmp : NULL;
+}
+
 int su_load_call_wrp(lua_State *L) {
-	return 0;
+	su_state *s = (su_state*)lua_touserdata(L, -3);
+	int len = lua_tointeger(L, -2);
+	code = lua_tostring(L, -1);
+	
+	len = su_load(s, reader, &len);
+	if (!len) {
+		su_pushnil(s);
+		su_call(s, 1, 1);
+		push_sexp(L, s, s->stack[s->stack_top - 1]);
+		su_pop(s, 1);
+	} else {
+		lua_pushnil(L);
+	}
+	return 1;
 }
 
 const luaL_Reg functions[] = {

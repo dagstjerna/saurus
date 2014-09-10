@@ -23,8 +23,11 @@
 --******************************************************************************--
 
 local specials = {}
+local macros = {}
 
 local opt_tail = true
+
+nil_substitute = {}
 
 local function gen_error(msg, line)
 	saurus_error = string.format("%s Line: %i", msg, line)
@@ -140,7 +143,7 @@ local function gen_do(func, sexp, tail)
 end
 
 local function gen_list(func, sexp, tail)
-	if sexp.type == "SYMBOL" then
+	if sexp.type ~= "SEXP" then
 		gen(func, sexp, tail, true)
 		return
 	end
@@ -191,6 +194,78 @@ local function gen_if(func, sexp, tail)
 	
 	gen(func, t, tail)
 	func.instructions[jmpidx][2] = #func.instructions
+end
+
+local function ismacro(sexp)
+	if #sexp.data > 0 and sexp.data[1].type == "SYMBOL" and not in_macro_world then
+		for k,v in pairs(macros) do
+			if sexp.data[1].atom == k then
+				return k
+			end
+		end
+	end
+end
+
+local function gen_macro(func, sexp)
+	if #sexp.data < 4 then
+		gen_error("Expected at least 3 arguments to macro!", sexp.line)
+	end
+	if sexp.data[2].type ~= "SYMBOL" then
+		gen_error("Macro definition expected symbol!", sexp.line)
+	end
+
+	local args, err = sexp.data[3], "Invalid macro!"
+	if args.type == "SEXP" then
+		for idx,arg in ipairs(args.data) do
+			if arg.type ~= "SYMBOL" then
+				gen_error(err, arg.line)
+			end
+		end
+	elseif args.type ~= "SYMBOL" then
+		gen_error(err, args.line)
+	end
+
+	local name = sexp.data[2].atom
+	if macros[name] then
+		gen_error("Redefinition of '" .. name .. "'.", sexp.line)
+	end
+
+	table.remove(sexp.data, 1)
+	sexp.data[1].atom = "lambda"
+	macros[name] = sexp
+end
+
+local function gen_macro_expansion(func, sexp)
+	local name = ismacro(sexp)
+	local macro = macros[name]
+	local line = sexp.line
+	table.remove(sexp.data, 1)
+
+	local simple_stream = {
+		write = function(self, str)
+			self.data = self.data .. str
+		end,
+		data = ""
+	}
+
+	local code = {type = "SEXP", line = line, data = {macro}}
+	for _,v in ipairs(sexp.data) do
+		local arg = {type = "SEXP", line = line, data = {{type = "SYMBOL", line = line, atom = "quote"}, v}}
+		table.insert(code.data, arg)
+	end
+	code = {type = "SEXP", line = line, data = {{type = "SYMBOL", line = line, atom = "lambda"}, {type = "SYMBOL", line = line, atom = "..."}, code}}
+
+	in_macro_world = true
+	compile(gen_sexp(code), name, simple_stream)
+	in_macro_world = false
+	local compiled_macro = simple_stream.data
+
+	sexp = writebin.su_load_call(macro_state, #compiled_macro, compiled_macro)
+	if not sexp then
+		gen_error("Could not generate macro!", line)
+	end
+
+	return recreate_ast(sexp, line, name)
 end
 
 local function gen_lambda(func, sexp, tail)
@@ -346,6 +421,30 @@ local function isspecial(sexp)
 	end
 end
 
+local function list_to_vec(sexp, line, macro_name)
+	local vec = {}
+	while sexp ~= nil_substitute do
+		table.insert(vec, recreate_ast(sexp[1], line, macro_name))
+		sexp = sexp[2]
+	end
+	return vec
+end
+
+function recreate_ast(sexp, line, macro_name)
+	local sexp_type = type(sexp)
+	if sexp == nil_substitute then
+		return {type = "SYMBOL", line = line, atom = "nil"}
+	elseif sexp_type == "string" or sexp_type == "number" then
+		return {type = "STRING", line = line, atom = sexp}
+	elseif sexp_type == "boolean" then
+		return {type = "SYMBOL", line = line, atom = sexp and "true" or "false"}
+	elseif sexp_type == "table" then
+		return {type = "SEXP", line = line, data = list_to_vec(sexp, line, macro_name)}
+	else
+		gen_error("Invalid expansion result from macro '" .. macro_name .. "'.", line)
+	end
+end
+
 function gen(func, sexp, tail, quoted)
 	if sexp.type == "NUMBER" or sexp.type == "STRING" then
 		gen_const(func, sexp)
@@ -358,6 +457,9 @@ function gen(func, sexp, tail, quoted)
 	else
 		if quoted then
 			gen_list(func, sexp, tail)
+		elseif ismacro(sexp) then
+			sexp = assert(gen_macro_expansion(func, sexp))
+			gen(func, sexp, tail)
 		else
 			local spe_func = isspecial(sexp)
 			if spe_func then
@@ -381,9 +483,8 @@ end
 specials["if"] = gen_if
 specials["lambda"] = gen_lambda
 specials["define"] = gen_define
-specials["defun"] = not_implemented
 specials["undef"] = not_implemented
-specials["defma"] = not_implemented
+specials["macro"] = gen_macro
 specials["rec"] = gen_rec
 specials["do"] = gen_do
 specials["quote"] = gen_quote

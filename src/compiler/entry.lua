@@ -31,7 +31,7 @@ SAURUS_VERSION = {0, 0, 1}
 SAURUS_VERSION_STRING = "0.0.1"
 
 local function start(src, dest)
-	local input = create_stream(io.open(src, "r"), src, "(lambda _ARGS ", ")")
+	local input = create_stream(io.open(src, "r"), src, "(lambda ... ", ")")
 	local ast = read(input)
 	local tree = gen_sexp(ast)
 
@@ -46,8 +46,8 @@ end
 
 function entry(src, dest)
 	saurus_error = nil
-	--macro_state = writebin.su_open()
+	macro_state = writebin.su_open()
 	local res, msg = pcall(start, src, dest)
-	--writebin.su_close(macro_state)
+	writebin.su_close(macro_state)
 	assert(res, msg)
 end
