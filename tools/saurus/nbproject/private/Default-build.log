@@ -1,0 +1,58 @@
+==== Building scales (debug) ====
+Creating obj/Debug/scales
+main.c
+Linking scales
+==== Building saurus (debug) ====
+Creating obj/Debug/saurus
+core.c
+src/vm/core.c: In function ‘su_stringify’:
+src/vm/core.c:298:52: warning: ISO C forbids conversion of function pointer to object pointer type [-Wpedantic]
+    sprintf(s->scratch_pad, "<native-function %p>", (void*)v->obj.nfunc);
+                                                    ^
+gc.c
+lib.c
+src/vm/lib.c: In function ‘read’:
+src/vm/lib.c:234:17: warning: ‘gets’ is deprecated (declared at /usr/include/stdio.h:638) [-Wdeprecated-declarations]
+                 su_pushstring(s, gets(buffer));
+                 ^
+libseq.c
+ref.c
+seq.c
+main.c
+compiler.c
+writebin.c
+lapi.c
+lauxlib.c
+lbaselib.c
+lcode.c
+ldblib.c
+ldebug.c
+ldo.c
+ldump.c
+lfunc.c
+lgc.c
+linit.c
+liolib.c
+llex.c
+lmathlib.c
+lmem.c
+loadlib.c
+lobject.c
+lopcodes.c
+loslib.c
+lparser.c
+lstate.c
+lstring.c
+lstrlib.c
+ltable.c
+ltablib.c
+ltm.c
+lundump.c
+lvm.c
+lzio.c
+print.c
+Linking saurus
+obj/Debug/saurus/main.o: In function `main':
+/home/phix/Projects/saurus-interpreter/src/repl/main.c:110: warning: the use of `tmpnam' is dangerous, better use `mkstemp'
+obj/Debug/saurus/lib.o: In function `read':
+/home/phix/Projects/saurus-interpreter/src/vm/lib.c:234: warning: the `gets' function is dangerous and should not be used.

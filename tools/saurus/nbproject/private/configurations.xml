@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="95">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df root="../../lua" name="0">
+      <in>lapi.c</in>
+      <in>lapi.h</in>
+      <in>lauxlib.c</in>
+      <in>lauxlib.h</in>
+      <in>lbaselib.c</in>
+      <in>lcode.c</in>
+      <in>lcode.h</in>
+      <in>ldblib.c</in>
+      <in>ldebug.c</in>
+      <in>ldebug.h</in>
+      <in>ldo.c</in>
+      <in>ldo.h</in>
+      <in>ldump.c</in>
+      <in>lfunc.c</in>
+      <in>lfunc.h</in>
+      <in>lgc.c</in>
+      <in>lgc.h</in>
+      <in>linit.c</in>
+      <in>liolib.c</in>
+      <in>llex.c</in>
+      <in>llex.h</in>
+      <in>llimits.h</in>
+      <in>lmathlib.c</in>
+      <in>lmem.c</in>
+      <in>lmem.h</in>
+      <in>loadlib.c</in>
+      <in>lobject.c</in>
+      <in>lobject.h</in>
+      <in>lopcodes.c</in>
+      <in>lopcodes.h</in>
+      <in>loslib.c</in>
+      <in>lparser.c</in>
+      <in>lparser.h</in>
+      <in>lstate.c</in>
+      <in>lstate.h</in>
+      <in>lstring.c</in>
+      <in>lstring.h</in>
+      <in>lstrlib.c</in>
+      <in>ltable.c</in>
+      <in>ltable.h</in>
+      <in>ltablib.c</in>
+      <in>ltm.c</in>
+      <in>ltm.h</in>
+      <in>lua.h</in>
+      <in>luaconf.h</in>
+      <in>lualib.h</in>
+      <in>lundump.c</in>
+      <in>lundump.h</in>
+      <in>lvm.c</in>
+      <in>lvm.h</in>
+      <in>lzio.c</in>
+      <in>lzio.h</in>
+      <in>print.c</in>
+    </df>
+    <df root="../../src" name="1">
+      <df name="compiler">
+        <in>compiler.c</in>
+        <in>writebin.c</in>
+      </df>
+      <df name="repl">
+        <in>main.c</in>
+      </df>
+      <df name="scales">
+        <in>main.c</in>
+      </df>
+      <df name="vm">
+        <in>core.c</in>
+        <in>gc.c</in>
+        <in>gc.h</in>
+        <in>intern.h</in>
+        <in>lib.c</in>
+        <in>libseq.c</in>
+        <in>options.h</in>
+        <in>platform.h</in>
+        <in>ref.c</in>
+        <in>ref.h</in>
+        <in>saurus.h</in>
+        <in>seq.c</in>
+        <in>seq.h</in>
+      </df>
+    </df>
+  </logicalFolder>
+  <projectmakefile>../../Makefile</projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <developmentServer>localhost</developmentServer>
+        <platform>2</platform>
+      </toolsSet>
+      <compile>
+        <compiledirpicklist>
+          <compiledirpicklistitem>.</compiledirpicklistitem>
+          <compiledirpicklistitem>${AUTO_FOLDER}</compiledirpicklistitem>
+        </compiledirpicklist>
+        <compiledir>${AUTO_FOLDER}</compiledir>
+        <compilecommandpicklist>
+          <compilecommandpicklistitem>${MAKE} ${ITEM_NAME}.o</compilecommandpicklistitem>
+          <compilecommandpicklistitem>${AUTO_COMPILE}</compilecommandpicklistitem>
+        </compilecommandpicklist>
+        <compilecommand>${AUTO_COMPILE}</compilecommand>
+      </compile>
+      <dbx_gdbdebugger version="1">
+        <gdb_pathmaps>
+        </gdb_pathmaps>
+        <gdb_interceptlist>
+          <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
+        </gdb_interceptlist>
+        <gdb_options>
+          <DebugOptions>
+          </DebugOptions>
+        </gdb_options>
+        <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
+      </dbx_gdbdebugger>
+      <nativedebugger version="1">
+        <engine>gdb</engine>
+      </nativedebugger>
+      <runprofile version="9">
+        <runcommandpicklist>
+          <runcommandpicklistitem>"${OUTPUT_PATH}"</runcommandpicklistitem>
+        </runcommandpicklist>
+        <runcommand>"${OUTPUT_PATH}"</runcommand>
+        <rundir>../..</rundir>
+        <buildfirst>false</buildfirst>
+        <terminal-type>0</terminal-type>
+        <remove-instrumentation>0</remove-instrumentation>
+        <environment>
+        </environment>
+      </runprofile>
+    </conf>
+  </confs>
+</configurationDescriptor>

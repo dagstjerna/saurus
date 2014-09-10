@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="95">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <df root="../../lua" name="0">
+      <in>lapi.c</in>
+      <in>lauxlib.c</in>
+      <in>lbaselib.c</in>
+      <in>lcode.c</in>
+      <in>ldblib.c</in>
+      <in>ldebug.c</in>
+      <in>ldo.c</in>
+      <in>ldump.c</in>
+      <in>lfunc.c</in>
+      <in>lgc.c</in>
+      <in>linit.c</in>
+      <in>liolib.c</in>
+      <in>llex.c</in>
+      <in>lmathlib.c</in>
+      <in>lmem.c</in>
+      <in>loadlib.c</in>
+      <in>lobject.c</in>
+      <in>lopcodes.c</in>
+      <in>loslib.c</in>
+      <in>lparser.c</in>
+      <in>lstate.c</in>
+      <in>lstring.c</in>
+      <in>lstrlib.c</in>
+      <in>ltable.c</in>
+      <in>ltablib.c</in>
+      <in>ltm.c</in>
+      <in>lundump.c</in>
+      <in>lvm.c</in>
+      <in>lzio.c</in>
+      <in>print.c</in>
+    </df>
+    <df root="../../src" name="1">
+      <df name="compiler">
+        <in>compiler.c</in>
+        <in>writebin.c</in>
+      </df>
+      <df name="repl">
+        <in>main.c</in>
+      </df>
+      <df name="scales">
+        <in>main.c</in>
+      </df>
+      <df name="vm">
+        <in>core.c</in>
+        <in>gc.c</in>
+        <in>lib.c</in>
+        <in>libseq.c</in>
+        <in>ref.c</in>
+        <in>seq.c</in>
+      </df>
+    </df>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>../../Makefile</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
+  <sourceRootList>
+    <Elem>../../lua</Elem>
+    <Elem>../../src</Elem>
+  </sourceRootList>
+  <projectmakefile>../../Makefile</projectmakefile>
+  <confs>
+    <conf name="Default" type="0">
+      <toolsSet>
+        <compilerSet>default</compilerSet>
+        <dependencyChecking>false</dependencyChecking>
+        <rebuildPropChanged>false</rebuildPropChanged>
+      </toolsSet>
+      <flagsDictionary>
+        <element flagsID="0" commonFlags="-g"/>
+        <element flagsID="1" commonFlags="-g -ansi"/>
+      </flagsDictionary>
+      <codeAssistance>
+      </codeAssistance>
+      <makefileType>
+        <makeTool>
+          <buildCommandWorkingDir>../..</buildCommandWorkingDir>
+          <buildCommand>${MAKE} -f Makefile</buildCommand>
+          <cleanCommand>${MAKE} -f Makefile clean</cleanCommand>
+          <executablePath>../../saurus</executablePath>
+          <cTool>
+            <preprocessorList>
+              <Elem>DEBUG</Elem>
+            </preprocessorList>
+          </cTool>
+        </makeTool>
+      </makefileType>
+      <item path="../../lua/lapi.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/lauxlib.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/lbaselib.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/lcode.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/ldblib.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/ldebug.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/ldo.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/ldump.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/lfunc.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/lgc.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/linit.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/liolib.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/llex.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/lmathlib.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/lmem.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/loadlib.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/lobject.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/lopcodes.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/loslib.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/lparser.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/lstate.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/lstring.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/lstrlib.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/ltable.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/ltablib.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/ltm.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/lundump.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/lvm.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/lzio.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../lua/print.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../src/compiler/compiler.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../src/compiler/writebin.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../src/repl/main.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../src/scales/main.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../src/vm/core.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../src/vm/gc.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../src/vm/lib.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../src/vm/libseq.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../src/vm/ref.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="../../src/vm/seq.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <folder path="0">
+        <cTool>
+          <incDir>
+            <pElem>../../lua</pElem>
+            <pElem>../..</pElem>
+          </incDir>
+        </cTool>
+      </folder>
+      <folder path="1/compiler">
+        <cTool>
+          <incDir>
+            <pElem>../../lua</pElem>
+            <pElem>../..</pElem>
+          </incDir>
+        </cTool>
+      </folder>
+      <folder path="1/repl">
+        <cTool>
+          <incDir>
+            <pElem>../../lua</pElem>
+            <pElem>../..</pElem>
+          </incDir>
+        </cTool>
+      </folder>
+      <folder path="1/scales">
+        <cTool>
+          <incDir>
+            <pElem>../../src/scales</pElem>
+            <pElem>../../src/vm</pElem>
+            <pElem>../..</pElem>
+          </incDir>
+        </cTool>
+      </folder>
+      <folder path="1/vm">
+        <cTool>
+          <incDir>
+            <pElem>../../lua</pElem>
+            <pElem>../..</pElem>
+          </incDir>
+        </cTool>
+      </folder>
+    </conf>
+  </confs>
+</configurationDescriptor>
