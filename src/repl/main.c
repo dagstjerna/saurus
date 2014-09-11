@@ -95,7 +95,7 @@ int main(int argc, char *argv[]) {
 	ret = 0;
 	if (argc < 2 || pipe) {
 		if (!pipe)
-			puts("Type '-h' for help or 'q to quit.\n");
+			puts("Type -h for help or 'q to quit.\n");
 		su_pushstring(s, repl_help_text);
 		su_setglobal(s, 0, "-h");
 		
@@ -148,7 +148,7 @@ int main(int argc, char *argv[]) {
 				return -1;
 			}
 			
-			su_assert(s, su_getglobal(s, "print"), "Could not retrive 'print' function.");
+			su_assert(s, su_getglobal(s, "print"), "Could not retrieve 'print' function.");
 			
 			if (su_load(s, &reader, fp)) {
 				su_close(s);

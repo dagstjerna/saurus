@@ -14,13 +14,6 @@ solution "saurus"
       defines { "RELEASE" }
       flags { "Optimize" }
 
-   project "scales"
-      kind "ConsoleApp"
-      language "C"
-      includedirs { "src/scales", "src/vm" }
-      links { "git2" }
-      files { "src/scales/*.h", "src/scales/*.c" }
-
    project "saurus"
       kind "ConsoleApp"
       language "C"
