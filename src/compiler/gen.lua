@@ -45,7 +45,7 @@ local function gen_inst(func, inst, line, ...)
 end
 
 local function call_or_tail(func, tail, line, narg)
-	gen_inst(func, (tail and opt_tail) and "TCALL" or "CALL", line, narg)
+	gen_inst(func, (tail and opt_tail and (not func.parent or not func.parent.topfunc)) and "TCALL" or "CALL", line, narg)
 end
 
 local function find_lable(func, lable)
@@ -422,13 +422,16 @@ local function isspecial(sexp)
 end
 
 local function list_to_vec(sexp, line, macro_name, quoted)
-	local vec = {}
-	local q = (quoted and (sexp[1] ~= "unquote")) or (sexp[1] == "quote")
+	local vec, res = {}, {}
+	--local q = (quoted and (sexp[1] ~= "unquote")) or (sexp[1] == "quote")
 	while sexp ~= nil_substitute do
 		table.insert(vec, recreate_ast(sexp[1], line, macro_name, q))
 		sexp = sexp[2]
 	end
-	return vec
+	for i = #vec, 0, -1 do
+		table.insert(res, vec[i])
+	end
+	return res
 end
 
 function recreate_ast(sexp, line, macro_name, quoted)
@@ -438,7 +441,7 @@ function recreate_ast(sexp, line, macro_name, quoted)
 	elseif sexp_type == "number" then
 		return {type = "NUMBER", line = line, atom = sexp}
 	elseif sexp_type == "string" then
-		return {type = quoted and "STRING" or "SYMBOL", line = line, atom = sexp}
+		return {type = "SYMBOL", line = line, atom = sexp} --{type = quoted and "STRING" or "SYMBOL", line = line, atom = sexp}
 	elseif sexp_type == "boolean" then
 		return {type = "SYMBOL", line = line, atom = sexp and "true" or "false"}
 	elseif sexp_type == "table" then
@@ -449,7 +452,7 @@ function recreate_ast(sexp, line, macro_name, quoted)
 end
 
 function gen(func, sexp, tail, quoted)
-	if sexp.type == "NUMBER" or sexp.type == "STRING" then
+	if sexp.type == "NUMBER" then
 		gen_const(func, sexp)
 	elseif sexp.type == "SYMBOL" then
 		if quoted or sexp.atom == "nil" or sexp.atom == "true" or sexp.atom == "false" then
@@ -475,7 +478,7 @@ function gen(func, sexp, tail, quoted)
 end
 
 function gen_sexp(sexp)
-	local func = {instructions = {}, linenr = {}, const = {}, lables = {}, maxlables = 0, prot = {}, up = {}}
+	local func = {instructions = {}, linenr = {}, const = {}, lables = {}, maxlables = 0, prot = {}, up = {}, topfunc = true}
 	gen(func, sexp)
 	gen_inst(func, "LOAD", nil, 0)
 	call_or_tail(func, false, nil, 1)

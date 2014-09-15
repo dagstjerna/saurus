@@ -128,7 +128,8 @@ local function next_token(stream)
 		elseif is_chars(COMMENT_CHARS, ch) then
 			read_comment(stream)
 		elseif is_chars(STRINGBOUND_CHAR, ch) then
-			return {type = "STRING", atom = read_string(stream), line = stream:line()}
+			local str = {type = "SYMBOL", atom = read_string(stream), line = stream:line()}
+			return {type = "SEXP", line = str.line, data = {{type = "SYMBOL", line = str.line, atom = "quote"}, str}}
 		elseif is_chars(SPECIAL_CHARS, ch) then
 			return ch
 		else

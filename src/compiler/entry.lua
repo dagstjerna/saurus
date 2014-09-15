@@ -31,7 +31,7 @@ SAURUS_VERSION = {0, 0, 1}
 SAURUS_VERSION_STRING = "0.0.1"
 
 local function start(src, dest)
-	local input = create_stream(io.open(src, "r"), src, "(lambda ... ", ")")
+	local input = create_stream(io.open(src, "r"), src, "(lambda (...) ", ")")
 	local ast = read(input)
 	local tree = gen_sexp(ast)
 

@@ -162,7 +162,8 @@ int main(int argc, char *argv[]) {
 			fclose(fp);
 			remove(tmp);
 			
-			su_call(s, 0, 1);
+			su_vector(s, 0); /* ... */
+			su_call(s, 1, 1);
 			if (su_type(s, -1) == SU_STRING && !strcmp(su_tostring(s, -1, NULL), "q")) {
 				ret = 0;
 				break;

@@ -41,9 +41,6 @@
       <df name="repl">
         <in>main.c</in>
       </df>
-      <df name="scales">
-        <in>main.c</in>
-      </df>
       <df name="vm">
         <in>core.c</in>
         <in>gc.c</in>
@@ -154,8 +151,6 @@
       </item>
       <item path="../../src/repl/main.c" ex="false" tool="0" flavor2="0">
       </item>
-      <item path="../../src/scales/main.c" ex="false" tool="0" flavor2="0">
-      </item>
       <item path="../../src/vm/core.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="../../src/vm/gc.c" ex="false" tool="0" flavor2="0">
@@ -188,15 +183,6 @@
         <cTool>
           <incDir>
             <pElem>../../lua</pElem>
-            <pElem>../..</pElem>
-          </incDir>
-        </cTool>
-      </folder>
-      <folder path="1/scales">
-        <cTool>
-          <incDir>
-            <pElem>../../src/scales</pElem>
-            <pElem>../../src/vm</pElem>
             <pElem>../..</pElem>
           </incDir>
         </cTool>

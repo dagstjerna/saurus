@@ -34,14 +34,14 @@
 typedef struct state su_state;
 
 enum {
-	SU_FALSE,
-	SU_TRUE
+    SU_FALSE,
+    SU_TRUE
 };
 
 enum su_object_type {
-	SU_INV, SU_NIL, SU_BOOLEAN, SU_STRING, SU_NUMBER,
-	SU_SEQ, SU_FUNCTION, SU_NATIVEFUNC, SU_VECTOR, SU_MAP,
-	SU_LOCAL, SU_NATIVEPTR, SU_NATIVEDATA, SU_NUM_OBJECT_TYPES
+    SU_INV, SU_NIL, SU_BOOLEAN, SU_STRING, SU_NUMBER,
+    SU_SEQ, SU_FUNCTION, SU_NATIVEFUNC, SU_VECTOR, SU_MAP,
+    SU_LOCAL, SU_NATIVEPTR, SU_NATIVEDATA, SU_NUM_OBJECT_TYPES
 };
 
 typedef enum su_object_type su_object_type_t;
@@ -51,8 +51,8 @@ typedef const void* (*su_reader)(size_t*,void*);
 typedef void* (*su_alloc)(void*,size_t);
 
 typedef struct {
-	/* Fix this */
-	int _;
+    /* Fix this */
+    int _;
 } su_data_class_t;
 
 su_state *su_init(su_alloc alloc);

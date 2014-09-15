@@ -64,9 +64,6 @@
       <df name="repl">
         <in>main.c</in>
       </df>
-      <df name="scales">
-        <in>main.c</in>
-      </df>
       <df name="vm">
         <in>core.c</in>
         <in>gc.c</in>
@@ -109,8 +106,11 @@
         <gdb_interceptlist>
           <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
         </gdb_interceptlist>
+        <gdb_signals>
+        </gdb_signals>
         <gdb_options>
           <DebugOptions>
+            <option name="debug_command" value="&quot;${OUTPUT_PATH}&quot;"/>
           </DebugOptions>
         </gdb_options>
         <gdb_buildfirst gdb_buildfirst_overriden="false" gdb_buildfirst_old="false"/>
